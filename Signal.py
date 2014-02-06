@@ -25,6 +25,6 @@ class Signal(object):
         return Signal._registry[name]
 
 
-# Turn Signal into an instance of itself so getattr works
-# this also prevents the creation of other instances of Signal
+# Turn Signal into an instance of itself so getattr works.
+# This also prevents Signal() from creating a new instance.
 Signal = Signal()
