@@ -28,7 +28,7 @@ class Hsm(object):
 
     def initial(me, event = None):
         """Transitions to the initial state.  Follows any INIT transitions
-        from the inital state and performs ENTRY actions as is proceeds.
+        from the inital state and performs ENTRY actions as it proceeds.
         p. 172
         """
 
@@ -37,8 +37,6 @@ class Hsm(object):
 
         # From the designated initial state, record the path to top
         path = []
-        path.append(me.state)
-        EventProcessor.trig(me.state, Signal.EMPTY)
         while me.state != Hsm.top:
             path.append(me.state)
             EventProcessor.trig(me.state, Signal.EMPTY)
