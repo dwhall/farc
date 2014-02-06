@@ -7,7 +7,7 @@ __usage__ = """
 """
 
 
-from Signal import Signal
+from pq.Signal import Signal
 
 
 class Event(object):
