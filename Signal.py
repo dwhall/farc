@@ -1,7 +1,6 @@
 __usage__ = """
     from Signal import Signal
     Signal.register("KEYPRESS")
-    e = Event(Signal.KEYPRESS, 42)
 """
 
 
