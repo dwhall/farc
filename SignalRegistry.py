@@ -11,12 +11,12 @@
 _registry = {}
 
 
-def genCount():
+def _genCount():
     i = 0
     while True:
         yield i
         i += 1
-counter = genCount()
+counter = _genCount()
 
 
 class SignalRegistry(object):
