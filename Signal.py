@@ -1,39 +1,30 @@
-"""Usage::
-
-    import pq
-    SIG = pq.SignalRegistry()
-    SIG.register("ACK")
-    SIG.register("BYE")
-    print SIG.ACK
+__usage__ = """
+    from Signal import Signal
+    Signal.register("KEYPRESS")
+    e = Event(Signal.KEYPRESS, 42)
 """
 
 
-_registry = {}
-
-
-def _genCount():
-    i = 0
-    while True:
-        yield i
-        i += 1
-counter = _genCount()
-
-
-class SignalRegistry(object):
-    """Signal Registry
-
-    Create an instance of this class,
-    then register as many signals as necessary.
-    Each signal is assigned a unique number (monotonic, increasing)
-    and the signal and value are kept in a dict.
-    All instances of this class share the same dict
-    so that signals are accessible to all.
+class Signal(object):
+    """An asynchronous stimulus that triggers reactions.
+    A unique identifier that, along with a value, specifies an Event.
     """
 
-    def register(self, signame):
-        global _registry
-        assert signame not in _registry
-        _registry[signame] = counter.next()
+    _registry = {}
+    _id = 0
+
+
+    @staticmethod
+    def register(signame):
+        assert signame not in Signal._registry
+        Signal._registry[signame] = Signal._id
+        Signal._id += 1
+
 
     def __getattr__(self, name):
-        return _registry[name]
+        return Signal._registry[name]
+
+
+# Turn Signal into an instance of itself so getattr works
+# this also prevents the creation of other instances of Signal
+Signal = Signal()
