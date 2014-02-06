@@ -28,3 +28,10 @@ class Signal(object):
 # Turn Signal into an instance of itself so getattr works.
 # This also prevents Signal() from creating a new instance.
 Signal = Signal()
+
+
+# Register the reserved (system) signals
+Signal.register("EMPTY") # 0
+Signal.register("ENTRY") # 1
+Signal.register("EXIT")  # 2
+Signal.register("INIT")  # 3
