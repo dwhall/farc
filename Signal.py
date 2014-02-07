@@ -7,6 +7,7 @@ __usage__ = """
 class Signal(object):
     """An asynchronous stimulus that triggers reactions.
     A unique identifier that, along with a value, specifies an Event.
+    p. 154
     """
 
     _registry = {}

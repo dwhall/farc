@@ -13,6 +13,7 @@ from pq.Signal import Signal
 class Event(object):
     """An event is an occurrence of significance to the system
     consisting of a Signal and a value.
+    p. 154
     """
 
     def __init__(self, signal, value):

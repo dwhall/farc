@@ -23,7 +23,7 @@ class Hsm(object):
     def __init__(me, initialState): me.state = initialState # Ctor p. 162
     def handled(me, event): return RET_HANDLED
     def tran(me, nextState): me.state = nextState; return RET_TRAN
-    def super(me, superState): me.state = superState; return RET_SUPER
+    def super(me, superState): me.state = superState; return RET_SUPER # p. 158
     def top(me, event): return RET_IGNORED # p. 165
 
 
