@@ -17,13 +17,13 @@ class Hsm(object):
     RET_HANDLED = 0
     RET_IGNORED = 1
     RET_TRAN = 2
-    RET_PARENT = 3
+    RET_SUPER = 3
 
 
     def __init__(me, initialState): me.state = initialState # Ctor p. 162
     def handled(me, event): return RET_HANDLED
     def tran(me, nextState): me.state = nextState; return RET_TRAN
-    def parent(me, parentState): me.state = parentState; return RET_PARENT # super
+    def super(me, superState): me.state = superState; return RET_SUPER
     def top(me, event): return RET_IGNORED # p. 165
 
 
