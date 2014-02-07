@@ -62,6 +62,6 @@ class Hsm(object):
 
 
     @staticmethod
-    def isIn(state):
+    def isIn(me, state):
         pass
 
