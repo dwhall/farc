@@ -4,6 +4,9 @@
 """
 
 
+import pq.Signal
+
+
 class Hsm(object):
     """A Hierarchical State Machine (HSM) framework.
     Full support for hierarchical state nesting.
@@ -44,7 +47,7 @@ class Hsm(object):
         path = []
         while me.state != Hsm.top:
             path.append(me.state)
-            EventProcessor.trig(me.state, Signal.EMPTY)
+            EventProcessor.trig(me, me.state, Signal.EMPTY)
 
         # Perform ENTRY action for each state from after-top to initial
         path.reverse()
@@ -53,9 +56,9 @@ class Hsm(object):
             EventProcessor.enter(me.state)
 
         # Follow any downstream INIT transitions and their ENTRY actions
-        while RET_TRAN == EventProcessor.trig(me.state, Signal.INIT):
+        while RET_TRAN == EventProcessor.trig(me, me.state, Signal.INIT):
             s = me.state
-            EventProcessor.enter(me.state)
+            EventProcessor.enter(me, me.state)
         me.state = s
 
 

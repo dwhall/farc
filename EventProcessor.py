@@ -1,17 +1,14 @@
 """Usage::
 
     import pq
-    pq.EventProcessor.trig(state, Sig.SIG_ACK)
+    pq.EventProcessor.trig(state, Si)
 """
 
 
 class EventProcessor(object):
-    """The EvenProcessor calls the state handler function
-    with the active signal.
-    """
 
     @staticmethod
-    def trig(state, signal): state(signal)
+    def trig(me, state, signal): state(me, Event.Reserved(signal))
 
     @staticmethod
-    def enter(state,): state(Signal.ENTER)
+    def enter(me, state,): state(me, Event.ENTRY)
