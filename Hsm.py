@@ -24,7 +24,10 @@ class Hsm(object):
     def handled(me, event): return RET_HANDLED
     def tran(me, nextState): me.state = nextState; return RET_TRAN
     def super(me, superState): me.state = superState; return RET_SUPER # p. 158
-    def top(me, event): return RET_IGNORED # p. 165
+
+
+    @staticmethod
+    def top(me, event): return RET_IGNORED # p. 163
 
 
     def initialize(me, event = None):
