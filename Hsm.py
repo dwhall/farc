@@ -13,6 +13,7 @@ class Hsm(object):
     Support for events with arbitrary parameters.
     """
 
+    # Every state handler function must return one of these values
     RET_HANDLED = 0
     RET_IGNORED = 1
     RET_TRAN = 2
