@@ -20,7 +20,7 @@ class Hsm(object):
     RET_SUPER = 3
 
 
-    def __init__(me, initialState): me.state = initialState # Ctor p. 162
+    def __init__(me, initialState): me.state = me.top; me.initialState = initialState
     def handled(me, event): return RET_HANDLED
     def tran(me, nextState): me.state = nextState; return RET_TRAN
     def super(me, superState): me.state = superState; return RET_SUPER # p. 158
