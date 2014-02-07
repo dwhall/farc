@@ -27,9 +27,10 @@ class Hsm(object):
     def top(me, event): return RET_IGNORED # p. 165
 
 
-    def initial(me, event = None):
+    def initialize(me, event = None):
         """Transitions to the initial state.  Follows any INIT transitions
         from the inital state and performs ENTRY actions as it proceeds.
+        Use this to pass any parameters to initialize the state machine.
         p. 172
         """
 
