@@ -78,8 +78,31 @@ class Hsm(object):
 
     def dispatch(me, event):
         """Follow the transitions until the event is handled or Top is reached
+        p. 174
         """
-        pass
+
+        t = me.state
+
+        # Proceed to superstates if event is not handled
+        while True:
+            s = me.state
+            r = s(me, event)
+            if r != RET_SUPER:
+                break
+
+        if r == RET_TRAN:
+            path = [me.state, t]
+
+            while t != s:
+                if Hsm.trig(me, t, Signal.EXIT):
+                    Hsm.trig(me, t, Signal.EMPTY)
+                t = me.state
+
+            # ...
+
+        me.state = t
+
+
 
 
     @staticmethod
