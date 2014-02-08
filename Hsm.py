@@ -67,6 +67,9 @@ class Hsm(object):
             if EventProcessor.trig(me, t, Signal.INIT) != RET_TRAN:
                 break
 
+        # Current state is set to the final leaf state
+        me.state = t
+
 
     def dispatch(me, event):
         """Follow the transitions until the event is handled or Top is reached
