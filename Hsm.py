@@ -4,7 +4,7 @@
 """
 
 
-import pq.Signal
+from pq.Signal import Signal
 
 
 class Hsm(object):
@@ -43,23 +43,29 @@ class Hsm(object):
         # There MUST be an initial transition
         assert me.state(me, event) == RET_TRAN
 
-        # From the designated initial state, record the path to top
-        path = []
-        while me.state != Hsm.top:
-            path.append(me.state)
+        t = Hsm.top
+
+        while True:
+
+            # From the designated initial state, record the path to top
+            path = []
             EventProcessor.trig(me, me.state, Signal.EMPTY)
+            while me.state != t:
+                path.append(me.state)
+                EventProcessor.trig(me, me.state, Signal.EMPTY)
+            me.state = path[0]
 
-        # Perform ENTRY action for each state from after-top to initial
-        path.reverse()
-        for s in path:
-            me.state = s
-            EventProcessor.enter(me.state)
+            # Perform ENTRY action for each state from after-top to initial
+            path.reverse()
+            for s in path:
+                me.state = s
+                EventProcessor.enter(me, me.state)
 
-        # Follow any downstream INIT transitions and their ENTRY actions
-        while RET_TRAN == EventProcessor.trig(me, me.state, Signal.INIT):
-            s = me.state
-            EventProcessor.enter(me, me.state)
-        me.state = s
+            # Current state becomes new source (-1 because path is reversed)
+            t = path[-1]
+
+            if EventProcessor.trig(me, t, Signal.INIT) != RET_TRAN:
+                break
 
 
     def dispatch(me, event):
