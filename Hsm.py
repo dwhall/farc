@@ -21,6 +21,11 @@ class Hsm(object):
     RET_IGNORED = 1
     RET_TRAN = 2
     RET_SUPER = 3
+    # In C code but not in book
+    #RET_UNHANDLED
+    #RET_ENTRY
+    #RET_EXIT
+    #RET_INITIAL
 
 
     def __init__(me, initialState): me.state = me.top; me.initialState = initialState
