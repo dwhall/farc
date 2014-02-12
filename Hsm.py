@@ -46,25 +46,24 @@ class Hsm(object):
         """
 
         # There MUST be an initial transition
-        assert me.state(me, event) == RET_TRAN
+        assert me.initialState(me, event) == RET_TRAN
 
         t = Hsm.top
 
         while True:
 
             # From the designated initial state, record the path to top
-            path = []
-            EventProcessor.trig(me, me.state, Signal.EMPTY)
-            while me.state != t:
-                path.append(me.state)
-                EventProcessor.trig(me, me.state, Signal.EMPTY)
-            me.state = path[0]
+            path = [me.initialState]
+            EventProcessor.trig(me, me.initialState, Signal.EMPTY)
+            while me.initialState != t:
+                path.append(me.initialState)
+                EventProcessor.trig(me, me.initialState, Signal.EMPTY)
+            me.initialState = path[0]
 
             # Perform ENTRY action for each state from after-top to initial
             path.reverse()
             for s in path:
-                me.state = s
-                EventProcessor.enter(me, me.state)
+                EventProcessor.enter(me, s)
 
             # Current state becomes new source (-1 because path is reversed)
             t = path[-1]
