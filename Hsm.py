@@ -97,7 +97,84 @@ class Hsm(object):
                     Hsm.trig(me, t, Signal.EMPTY)
                 t = me.state
 
-            # ...
+            #p. 179
+            t = path[0]
+
+            if s == t:
+                EventProcessor.exit(me, s)
+                ip = 0 # ???
+
+            else:
+                EventProcessor.trig(me, t, Event.EMPTY)
+                t = me.state
+                if s == t:
+                    ip = 0 # ???
+
+                else:
+                    EventProcessor.trig(me, s, Event.EMPTY)
+                    if me.state == t:
+                        EventProcessor.exit(me, s)
+                        ip = 0 # ???
+
+                    else:
+                        iq = 0
+                        ip = 1
+                        path[1] = t
+                        t = me.state
+                        
+                        r = EventProcessor.trig(me, path[1], Event.EMPTY)
+                        while r == RET_SUPER:
+                            path[++ip] = me.state
+                            if me.state == s:
+                                iq = 1
+                                ip -= 1
+                                r = RET_HANDLED
+
+                            else:
+                                r = EventProcessor.trig(me, me.state, Event.EMPTY)
+
+                        if iq == 0:
+                            EventProcessor.exit(me, s)
+                            iq = ip
+                            r = RET_IGNORED
+
+                            while True:
+                                if t == path[iq]:
+                                    r = RET_HANDLED
+                                    ip = iq - 1
+                                    iq = -1
+
+                                else:
+                                    iq -= 1
+
+                                if iq < 0: break
+
+                            if r != RET_HANDLED:
+                                r = RET_IGNORED
+
+                                while  True:
+                                    if EventProcessor.trig(me, t, Event.EXIT) == RET_HANDLED:
+                                        EventProcessor.trig(me, t, Event.EMPTY)
+
+                                    t = me.state
+                                    iq = ip
+
+                                    while True:
+                                        if t == path[iq]:
+                                            ip = iq - 1
+                                            iq = -1
+                                            r = RET_HANDLED
+
+                                        else:
+                                            iq -= 1
+
+                                        if iq < 0: break
+
+                                    if r == RET_HANDLED: break
+            #for (12)
+
+
+
 
         me.state = t
 
