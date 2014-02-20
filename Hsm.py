@@ -80,105 +80,51 @@ class Hsm(object):
         p. 174
         """
 
-        t = me.state
-
         # Proceed to superstates if event is not handled
-        while True:
+        exit_path = []
+        r = RET_SUPER
+        while r == RET_SUPER:
             s = me.state
-            r = s(me, event)
-            if r != RET_SUPER:
-                break
+            exit_path.append(s)
+            r = s(me, event)    # possibly pass event to st handler
 
         if r == RET_TRAN:
-            path = [me.state, t]
+            t = me.state
 
-            while t != s:
-                if Hsm.trig(me, t, Signal.EXIT):
-                    Hsm.trig(me, t, Signal.EMPTY)
+            # Record path from source to top
+            while r != RET_IGNORED:
+                s = me.state
+                exit_path.append(s)
+                r = Hsm.trig(me, s, Signal.EXIT)
+
+            # Record path from target to top
+            me.state = t
+            entry_path = []
+            r = RET_TRAN
+            while r != RET_IGNORED:
                 t = me.state
+                entry_path.append(t)
+                r = Hsm.trig(me, t, Signal.EXIT)
 
-            #p. 179
-            t = path[0]
+            # Find the Least Common Ancestor between the source and target
+            i = -1
+            while exit_path[i] == entry_path[i]:
+                i -= 1
 
-            if s == t:
-                EventProcessor.exit(me, s)
-                ip = 0 # ???
+            # Exit all states in the exit path
+            for st in exit_path[1:i]:
+                r = Hsm.trig(me, st, Signal.EXIT)
+                assert (r == RET_SUPER) or (r == RET_EXIT)
 
-            else:
-                EventProcessor.trig(me, t, Event.EMPTY)
-                t = me.state
-                if s == t:
-                    ip = 0 # ???
+            # Enter all states in the entry path
+            # This is done in the reverse order of the path
+            for st in entry_path[i:0:-1]:
+                r = Hsm.trig(me, st, Signal.ENTRY)
+                assert r == RET_ENTRY
 
-                else:
-                    EventProcessor.trig(me, s, Event.EMPTY)
-                    if me.state == t:
-                        EventProcessor.exit(me, s)
-                        ip = 0 # ???
-
-                    else:
-                        iq = 0
-                        ip = 1
-                        path[1] = t
-                        t = me.state
-                        
-                        r = EventProcessor.trig(me, path[1], Event.EMPTY)
-                        while r == RET_SUPER:
-                            path[++ip] = me.state
-                            if me.state == s:
-                                iq = 1
-                                ip -= 1
-                                r = RET_HANDLED
-
-                            else:
-                                r = EventProcessor.trig(me, me.state, Event.EMPTY)
-
-                        if iq == 0:
-                            EventProcessor.exit(me, s)
-                            iq = ip
-                            r = RET_IGNORED
-
-                            while True:
-                                if t == path[iq]:
-                                    r = RET_HANDLED
-                                    ip = iq - 1
-                                    iq = -1
-
-                                else:
-                                    iq -= 1
-
-                                if iq < 0: break
-
-                            if r != RET_HANDLED:
-                                r = RET_IGNORED
-
-                                while  True:
-                                    if EventProcessor.trig(me, t, Event.EXIT) == RET_HANDLED:
-                                        EventProcessor.trig(me, t, Event.EMPTY)
-
-                                    t = me.state
-                                    iq = ip
-
-                                    while True:
-                                        if t == path[iq]:
-                                            ip = iq - 1
-                                            iq = -1
-                                            r = RET_HANDLED
-
-                                        else:
-                                            iq -= 1
-
-                                        if iq < 0: break
-
-                                    if r == RET_HANDLED: break
-            #for (12)
-
-
-
-
-        me.state = t
-
-
+            # Pass the event to the target state
+            st = entry_path[0]
+            Hsm.trig(me, st, event)
 
 
     @staticmethod
