@@ -1,7 +1,3 @@
-__usage__ = """
-    from Signal import Signal
-    Signal.register("KEYPRESS")
-"""
 
 
 class Signal(object):

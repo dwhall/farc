@@ -1,12 +1,3 @@
-__usage__ = """
-    from Signal import Signal
-    Signal.register("KEYPRESS")
-    evt_kp = Event(Signal.KEYPRESS, 42)
-    evt_kp.signal
-    evt_kp.value
-"""
-
-
 from pq.Signal import Signal
 
 

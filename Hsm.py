@@ -1,10 +1,5 @@
-"""Usage::
-
-    import pq
-"""
-
-
 from pq.Signal import Signal
+from pq.EventProcessor import EventProcessor
 
 
 class Hsm(object):
@@ -12,7 +7,6 @@ class Hsm(object):
     Full support for hierarchical state nesting.
     Guaranteed entry/exit action execution on arbitrary state transitions.
     Full support of nested initial transitions.
-    Fully reentrant event processor code with minimal stack requirements.
     Support for events with arbitrary parameters.
     """
 

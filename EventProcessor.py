@@ -1,8 +1,4 @@
-"""Usage::
-
-    import pq
-    pq.EventProcessor.trig(state, Si)
-"""
+from pq.Event import Event
 
 
 class EventProcessor(object):
