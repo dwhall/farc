@@ -16,20 +16,20 @@ class Hsm(object):
     RET_TRAN = 2
     RET_SUPER = 3
     # In C code but not in book
-    #RET_UNHANDLED
-    #RET_ENTRY
-    #RET_EXIT
-    #RET_INITIAL
+    # RET_UNHANDLED
+    # RET_ENTRY
+    # RET_EXIT
+    # RET_INITIAL
 
 
     def __init__(me, initialState): me.state = me.top; me.initialState = initialState
-    def handled(me, event): return RET_HANDLED
-    def tran(me, nextState): me.state = nextState; return RET_TRAN
-    def super(me, superState): me.state = superState; return RET_SUPER # p. 158
+    def handled(me, event): return Hsm.RET_HANDLED
+    def tran(me, nextState): me.state = nextState; return Hsm.RET_TRAN
+    def super(me, superState): me.state = superState; return Hsm.RET_SUPER # p. 158
 
 
     @staticmethod
-    def top(me, event): return RET_IGNORED # p. 163
+    def top(me, event): return Hsm.RET_IGNORED # p. 163
 
 
     def initialize(me, event = None):
@@ -40,7 +40,7 @@ class Hsm(object):
         """
 
         # There MUST be an initial transition
-        assert me.initialState(me, event) == RET_TRAN
+        assert me.initialState(me, event) == Hsm.RET_TRAN
 
         t = Hsm.top
 
@@ -62,7 +62,7 @@ class Hsm(object):
             # Current state becomes new source (-1 because path is reversed)
             t = path[-1]
 
-            if EventProcessor.trig(me, t, Signal.INIT) != RET_TRAN:
+            if EventProcessor.trig(me, t, Signal.INIT) != Hsm.RET_TRAN:
                 break
 
         # Current state is set to the final leaf state
@@ -76,17 +76,17 @@ class Hsm(object):
 
         # Proceed to superstates if event is not handled
         exit_path = []
-        r = RET_SUPER
-        while r == RET_SUPER:
+        r = Hsm.RET_SUPER
+        while r == Hsm.RET_SUPER:
             s = me.state
             exit_path.append(s)
             r = s(me, event)    # possibly pass event to st handler
 
-        if r == RET_TRAN:
+        if r == Hsm.RET_TRAN:
             t = me.state
 
             # Record path from source to top
-            while r != RET_IGNORED:
+            while r != Hsm.RET_IGNORED:
                 s = me.state
                 exit_path.append(s)
                 r = Hsm.trig(me, s, Signal.EXIT)
@@ -94,8 +94,8 @@ class Hsm(object):
             # Record path from target to top
             me.state = t
             entry_path = []
-            r = RET_TRAN
-            while r != RET_IGNORED:
+            r = Hsm.RET_TRAN
+            while r != Hsm.RET_IGNORED:
                 t = me.state
                 entry_path.append(t)
                 r = Hsm.trig(me, t, Signal.EXIT)
@@ -108,13 +108,13 @@ class Hsm(object):
             # Exit all states in the exit path
             for st in exit_path[1:i]:
                 r = Hsm.trig(me, st, Signal.EXIT)
-                assert (r == RET_SUPER) or (r == RET_EXIT)
+                assert (r == Hsm.RET_SUPER) or (r == Hsm.RET_EXIT)
 
             # Enter all states in the entry path
             # This is done in the reverse order of the path
             for st in entry_path[i:0:-1]:
                 r = Hsm.trig(me, st, Signal.ENTRY)
-                assert r == RET_ENTRY
+                assert r == Hsm.RET_ENTRY
 
             # Pass the event to the target state
             st = entry_path[0]
