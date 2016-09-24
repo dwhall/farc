@@ -4,12 +4,12 @@ from pq.Event import Event
 class EventProcessor(object):
 
     @staticmethod
-    def trig(me, state, signal): state(me, Event.Reserved[signal])
+    def trig(me, state, signal): return state(me, Event.Reserved[signal])
 
 
     @staticmethod
-    def enter(me, state): state(me, Event.ENTRY)
+    def enter(me, state): return state(me, Event.ENTRY)
 
 
     @staticmethod
-    def exit(me, state): state(me, Event.EXIT)
+    def exit(me, state): return state(me, Event.EXIT)
