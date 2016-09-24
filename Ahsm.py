@@ -6,15 +6,15 @@ class Ahsm(Hsm):
     Adds a priority, message queue and methods to post to the queue.
     """
 
-    def __init__(me, initialState, priority):
-        Hsm.__init__(me, initialState)
-        me.priority = priority
-        me.mq = []
-        # TODO: add thread/coroutine
-
-    def postLIFO(me, evt):
-        me.mq.append(evt)
+    def __init__(self, initialState, priority):
+        Hsm.__init__(self, initialState)
+        self.priority = priority
+        self.mq = []
 
 
-    def postFIFO(me, evt):
-        me.mq.insert(0, evt)
+    def postLIFO(self, evt):
+        self.mq.append(evt)
+
+
+    def postFIFO(self, evt):
+        self.mq.insert(0, evt)

@@ -22,17 +22,27 @@ class Hsm(object):
     # RET_INITIAL
 
 
-    def __init__(me, initialState): me.state = me.top; me.initialState = initialState
+    def __init__(self, initialState): self.state = self.top; self.initialState = initialState
+
+
+    @staticmethod
     def handled(me, event): return Hsm.RET_HANDLED
+
+
+    @staticmethod
     def tran(me, nextState): me.state = nextState; return Hsm.RET_TRAN
+
+
+    @staticmethod
     def super(me, superState): me.state = superState; return Hsm.RET_SUPER # p. 158
 
 
     @staticmethod
-    def top(me, event): return Hsm.RET_IGNORED # p. 163
+    def top(me, event): return Hsm.RET_IGNORED # p. 165
 
 
-    def initialize(me, event = None):
+    @staticmethod
+    def init(me, event = None):
         """Transitions to the initial state.  Follows any INIT transitions
         from the inital state and performs ENTRY actions as it proceeds.
         Use this to pass any parameters to initialize the state machine.
@@ -42,24 +52,33 @@ class Hsm(object):
         # There MUST be an initial transition
         assert me.initialState(me, event) == Hsm.RET_TRAN
 
+        # HWM starts in the top state
         t = Hsm.top
 
+        # Drill into the target
         while True:
 
+
+            # Store the target of the initial transition
+            path = [me.state]
+
             # From the designated initial state, record the path to top
-            path = [me.initialState]
-            EventProcessor.trig(me, me.initialState, Signal.EMPTY)
-            while me.initialState != t:
-                path.append(me.initialState)
-                EventProcessor.trig(me, me.initialState, Signal.EMPTY)
-            me.initialState = path[0]
+            EventProcessor.trig(me, me.state, Signal.EMPTY)
+            while me.state != t:
+                path.append(me.state)
+                print("DWH: me.state", me.state) #DWH
+                EventProcessor.trig(me, me.state, Signal.EMPTY)
+
+            # Restore the target of the initial transition
+            me.state = path[0]
+            assert len(path) < 32 # MAX_NEST_DEPTH (32 is arbitrary)
 
             # Perform ENTRY action for each state from after-top to initial
             path.reverse()
             for s in path:
                 EventProcessor.enter(me, s)
 
-            # Current state becomes new source (-1 because path is reversed)
+            # Current state becomes new source (-1 because path was reversed)
             t = path[-1]
 
             if EventProcessor.trig(me, t, Signal.INIT) != Hsm.RET_TRAN:
@@ -69,6 +88,7 @@ class Hsm(object):
         me.state = t
 
 
+    @staticmethod
     def dispatch(me, event):
         """Follow the transitions until the event is handled or Top is reached
         p. 174
@@ -89,7 +109,7 @@ class Hsm(object):
             while r != Hsm.RET_IGNORED:
                 s = me.state
                 exit_path.append(s)
-                r = Hsm.trig(me, s, Signal.EXIT)
+                r = EventProcessor.trig(me, s, Signal.EXIT)
 
             # Record path from target to top
             me.state = t
@@ -98,7 +118,7 @@ class Hsm(object):
             while r != Hsm.RET_IGNORED:
                 t = me.state
                 entry_path.append(t)
-                r = Hsm.trig(me, t, Signal.EXIT)
+                r = EventProcessor.trig(me, t, Signal.EXIT)
 
             # Find the Least Common Ancestor between the source and target
             i = -1
@@ -107,18 +127,18 @@ class Hsm(object):
 
             # Exit all states in the exit path
             for st in exit_path[1:i]:
-                r = Hsm.trig(me, st, Signal.EXIT)
+                r = EventProcessor.trig(me, st, Signal.EXIT)
                 assert (r == Hsm.RET_SUPER) or (r == Hsm.RET_EXIT)
 
             # Enter all states in the entry path
             # This is done in the reverse order of the path
             for st in entry_path[i:0:-1]:
-                r = Hsm.trig(me, st, Signal.ENTRY)
+                r = EventProcessor.trig(me, st, Signal.ENTRY)
                 assert r == Hsm.RET_ENTRY
 
             # Pass the event to the target state
             st = entry_path[0]
-            Hsm.trig(me, st, event)
+            EventProcessor.trig(me, st, event)
 
 
     @staticmethod
