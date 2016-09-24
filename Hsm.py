@@ -125,22 +125,21 @@ class Hsm(object):
             i = -1
             while exit_path[i] == entry_path[i]:
                 i -= 1
+            n = len(exit_path) + i + 1
 
             # Exit all states in the exit path
-            for st in exit_path[1:i]:
+            for st in exit_path[0:n]:
                 r = EventProcessor.exit(me, st)
-                assert (r == Hsm.RET_SUPER) or (r == Hsm.RET_EXIT)
+                assert (r == Hsm.RET_SUPER) or (r == Hsm.RET_HANDLED)
 
             # Enter all states in the entry path
             # This is done in the reverse order of the path
-            for st in entry_path[i:0:-1]:
+            for st in entry_path[n::-1]:
                 r = EventProcessor.enter(me, st)
                 assert r == Hsm.RET_HANDLED
 
-            # Pass the event to the target state
-            st = entry_path[0]
-            st(me, event)
-
+            # Arrive at the target state
+            me.state = t
 
     @staticmethod
     def isIn(me, state):
