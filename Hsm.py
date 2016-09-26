@@ -141,7 +141,7 @@ class Hsm(object):
             # Arrive at the target state
             me.state = t
 
+
     @staticmethod
     def isIn(me, state):
         pass
-
