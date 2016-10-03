@@ -1,5 +1,4 @@
-from pq.Signal import Signal
-from pq.EventProcessor import EventProcessor
+from pq import Event, Signal
 
 
 class Hsm(object):
@@ -23,6 +22,15 @@ class Hsm(object):
 
 
     def __init__(self, initialState): self.state = self.top; self.initialState = initialState
+
+
+    # Three macros to process reserved events through the current state
+    @staticmethod
+    def trig(me, state, signal): return state(me, Event.Reserved[signal])
+    @staticmethod
+    def enter(me, state): return state(me, Event.ENTRY)
+    @staticmethod
+    def exit(me, state): return state(me, Event.EXIT)
 
 
     @staticmethod
@@ -62,10 +70,10 @@ class Hsm(object):
             path = [me.state]
 
             # From the designated initial state, record the path to top
-            EventProcessor.trig(me, me.state, Signal.EMPTY)
+            Hsm.trig(me, me.state, Signal.EMPTY)
             while me.state != t:
                 path.append(me.state)
-                EventProcessor.trig(me, me.state, Signal.EMPTY)
+                Hsm.trig(me, me.state, Signal.EMPTY)
 
             # Restore the target of the initial transition
             me.state = path[0]
@@ -74,12 +82,12 @@ class Hsm(object):
             # Perform ENTRY action for each state from after-top to initial
             path.reverse()
             for s in path:
-                EventProcessor.enter(me, s)
+                Hsm.enter(me, s)
 
             # Current state becomes new source (-1 because path was reversed)
             t = path[-1]
 
-            if EventProcessor.trig(me, t, Signal.INIT) != Hsm.RET_TRAN:
+            if Hsm.trig(me, t, Signal.INIT) != Hsm.RET_TRAN:
                 break
 
         # Current state is set to the final leaf state
@@ -107,10 +115,10 @@ class Hsm(object):
             t = me.state
 
             # Record path to top
-            EventProcessor.trig(me, me.state, Signal.EMPTY)
+            Hsm.trig(me, me.state, Signal.EMPTY)
             while me.state != Hsm.top:
                 exit_path.append(me.state)
-                EventProcessor.trig(me, me.state, Signal.EMPTY)
+                Hsm.trig(me, me.state, Signal.EMPTY)
 
             # Record path from target to top
             me.state = t
@@ -119,7 +127,7 @@ class Hsm(object):
             while me.state != Hsm.top:
                 t = me.state
                 entry_path.append(t)
-                EventProcessor.trig(me, t, Signal.EMPTY)
+                Hsm.trig(me, t, Signal.EMPTY)
 
             # Find the Least Common Ancestor between the source and target
             i = -1
@@ -129,13 +137,13 @@ class Hsm(object):
 
             # Exit all states in the exit path
             for st in exit_path[0:n]:
-                r = EventProcessor.exit(me, st)
+                r = Hsm.exit(me, st)
                 assert (r == Hsm.RET_SUPER) or (r == Hsm.RET_HANDLED)
 
             # Enter all states in the entry path
             # This is done in the reverse order of the path
             for st in entry_path[n::-1]:
-                r = EventProcessor.enter(me, st)
+                r = Hsm.enter(me, st)
                 assert r == Hsm.RET_HANDLED
 
             # Arrive at the target state

@@ -11,7 +11,13 @@ class Signal(object):
 
 
     @staticmethod
+    def exists(signame):
+        return signame in _registry
+
+
+    @staticmethod
     def register(signame):
+        assert type(signame) is str
         assert signame not in Signal._registry
         Signal._registry[signame] = Signal._id
         Signal._id += 1

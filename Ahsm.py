@@ -1,4 +1,4 @@
-from pq.Hsm import Hsm
+from pq import Hsm
 
 
 class Ahsm(Hsm):
@@ -18,3 +18,6 @@ class Ahsm(Hsm):
 
     def postFIFO(self, evt):
         self.mq.insert(0, evt)
+
+    def subscribe(self, sig): pass
+    def unsubscribe(self, sig): pass
