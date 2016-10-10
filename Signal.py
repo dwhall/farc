@@ -7,7 +7,7 @@ class Signal(object):
     """
 
     _registry = {}
-    _id = 0
+    _lookup = []
 
 
     @staticmethod
@@ -17,10 +17,17 @@ class Signal(object):
 
     @staticmethod
     def register(signame):
+        """Registers the signame if it is not already registered.
+        Returns the signal number for the signame.
+        """
         assert type(signame) is str
-        assert signame not in Signal._registry
-        Signal._registry[signame] = Signal._id
-        Signal._id += 1
+        if signame in Signal._registry:
+            return Signal._registry[signame]
+        else:
+            sigid = len(Signal._lookup)
+            Signal._registry[signame] = sigid
+            Signal._lookup.append(signame)
+            return sigid
 
 
     def __getattr__(self, name):

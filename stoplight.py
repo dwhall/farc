@@ -10,9 +10,14 @@ from pq import *
 
 class Stoplight(Ahsm):
 
+    # Register Signals used by this AHSM
+    Signal.register("STOPLIGHT_NEXT")
+
+
     @staticmethod
     def initial(me, event):
         print("Stoplight initial")
+
         return me.tran(me, Stoplight.red)
 
 
@@ -52,23 +57,21 @@ class Stoplight(Ahsm):
         return me.super(me, me.top)
 
 
+# This is a stand-in function to dispatch events while the Framework is being constructed
 @asyncio.coroutine
-def ahsm_runner(loop):
-    event_next = Event(Signal.STOPLIGHT_NEXT, None)
+def ahsm_runner():
 
-    sl = Stoplight(Stoplight.initial, 0)
-    sl.init(sl, event_next)
-    print("runner init")
+    sl = Stoplight(Stoplight.initial)
+    event_next = Event(Signal.STOPLIGHT_NEXT, None)
+    sl.start(0, event_next)
 
     while True:
         yield from asyncio.sleep(2.0)
+        print("Dispatch: {0} to {1}".format(event_next, sl.state))
         sl.dispatch(sl, event_next)
-        print("runner dispatch", sl.state)
 
 
 if __name__ == "__main__":
-    Signal.register("STOPLIGHT_NEXT")
-
     loop = asyncio.get_event_loop()
-    loop.run_until_complete(ahsm_runner(loop))
+    loop.run_until_complete(ahsm_runner())
     loop.close()

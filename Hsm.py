@@ -24,27 +24,21 @@ class Hsm(object):
     def __init__(self, initialState): self.state = self.top; self.initialState = initialState
 
 
-    # Three macros to process reserved events through the current state
+    # Three helper functions to process reserved events through the current state
     @staticmethod
-    def trig(me, state, signal): return state(me, Event.Reserved[signal])
+    def trig(me, state, signal): return state(me, Event.reserved[signal])
     @staticmethod
     def enter(me, state): return state(me, Event.ENTRY)
     @staticmethod
     def exit(me, state): return state(me, Event.EXIT)
 
-
+    # Other helper functions
     @staticmethod
     def handled(me, event): return Hsm.RET_HANDLED
-
-
     @staticmethod
     def tran(me, nextState): me.state = nextState; return Hsm.RET_TRAN
-
-
     @staticmethod
     def super(me, superState): me.state = superState; return Hsm.RET_SUPER # p. 158
-
-
     @staticmethod
     def top(me, event): return Hsm.RET_IGNORED # p. 165
 
