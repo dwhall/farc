@@ -28,11 +28,11 @@ class Stoplight(Ahsm):
             print("red enter")
             return me.handled(me, event)
 
-        if sig == Signal.STOPLIGHT_NEXT:
+        elif sig == Signal.STOPLIGHT_NEXT:
             print("red next")
             return me.tran(me, Stoplight.green)
 
-        if sig == Signal.EXIT:
+        elif sig == Signal.EXIT:
             print("red exit")
             return me.handled(me, event)
 
@@ -46,11 +46,11 @@ class Stoplight(Ahsm):
             print("green enter")
             return me.handled(me, event)
 
-        if sig == Signal.STOPLIGHT_NEXT:
+        elif sig == Signal.STOPLIGHT_NEXT:
             print("green next")
             return me.tran(me, Stoplight.red)
 
-        if sig == Signal.EXIT:
+        elif sig == Signal.EXIT:
             print("green exit")
             return me.handled(me, event)
 
