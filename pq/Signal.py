@@ -22,6 +22,7 @@ class Signal(object):
         """
         assert type(signame) is str
         if signame in Signal._registry:
+            # TODO: emit warning that signal is already registrered
             return Signal._registry[signame]
         else:
             sigid = len(Signal._lookup)

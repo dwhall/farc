@@ -1,4 +1,5 @@
-from pq import Event, Signal
+from .Signal import Signal
+from .Event import Event
 
 
 class Hsm(object):
@@ -21,7 +22,9 @@ class Hsm(object):
     # RET_INITIAL
 
 
-    def __init__(self, initialState): self.state = self.top; self.initialState = initialState
+    def __init__(self, initialState): 
+        self.state = self.top
+        self.initialState = initialState
 
 
     # Three helper functions to process reserved events through the current state

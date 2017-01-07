@@ -1,5 +1,5 @@
-from pq import Hsm
-from pq import Framework
+from .Hsm import Hsm
+from .Framework import Framework
 
 
 class Ahsm(Hsm):
@@ -7,7 +7,7 @@ class Ahsm(Hsm):
     Adds a priority, message queue and methods to post to the queue.
     """
 
-    def start(self, priority, initEvent): 
+    def start(self, priority, initEvent=None): 
         self.priority = priority
         Framework.add(self)
         self.mq = []

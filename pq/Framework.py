@@ -1,6 +1,6 @@
 import asyncio, sys
 
-from pq import Event
+#from Event
 
 
 #def getLoop():
@@ -22,7 +22,7 @@ class Framework(object):
     # The timeEventCallback() will add a Periodict TimeEvent back into the dict with its next expiration.
     _time_events = {} 
 
-    # When a TimeEvent is scheduled for hte timeEventCallback(), 
+    # When a TimeEvent is scheduled for the timeEventCallback(), 
     # a handle is kept so that the callback may be cancelled if necessary.
     _tm_event_handle = None
 
@@ -73,10 +73,10 @@ class Framework(object):
         """Adds the TimeEvent to the list of active time events in the Framework.
         The event will fire its signal (to the TimeEvent's target Ahsm) after the delay, delta.
         """
-        assert tm_event not in _time_events.values()
+        assert tm_event not in Framework._time_events.values()
 
         # Calculate the TimeEvent's expiration 
-        expiration = _event_loop.time() + delta
+        expiration = Framework._event_loop.time() + delta
 
         Framework._insortTimeEvent(tm_event, expiration)
 
@@ -90,19 +90,19 @@ class Framework(object):
         """
         # If an event already occupies this expiration time, 
         # increase this event's expiration by the smallest measurable amount
-        if expiration in _time_events.keys():
+        if expiration in Framework._time_events.keys():
             expiration += sys.float_info.epsilon
-        _time_events[expiration] = tm_event
+        Framework._time_events[expiration] = tm_event
 
         # If this is the only active TimeEvent, schedule its callback
-        if len(_time_events) == 1:
-            _tm_event_handle = _event_loop.call_at(expiration, Framework.timeEventCallback, tm_event, expiration)
+        if len(Framework._time_events) == 1:
+            _tm_event_handle = Framework._event_loop.call_at(expiration, Framework.timeEventCallback, tm_event, expiration)
 
         # If there are other TimeEvents, check if this one should replace the scheduled one
         else:
-            if expiration < min(_time_events.keys()):
+            if expiration < min(Framework._time_events.keys()):
                 _tm_event_handle.cancel()
-                _tm_event_handle = _event_loop.call_at(expiration, Framework.timeEventCallback, tm_event, expiration)
+                _tm_event_handle = Framework._event_loop.call_at(expiration, Framework.timeEventCallback, tm_event, expiration)
 
 
     @staticmethod
@@ -111,18 +111,18 @@ class Framework(object):
         Cancels the TimeEvent's callback if there is one.
         Schedules the next event's callback if there is one.
         """
-        for k,v in _time_events.items():
+        for k,v in Framework._time_events.items():
             if v is tm_event:
-                del _time_events[k]
+                del Framework._time_events[k]
 
                 # If the event being removed is scheduled for callback,
                 # cancel and schedule the next event if there is one
-                if k == min(_time_events.keys()):
+                if k == min(Framework._time_events.keys()):
                     _tm_event_handle.cancel()
-                    if len(_time_events) > 0:
-                        next_expiration = min(_time_events.keys())
-                        next_event = _time_events[next_expiration]
-                        _tm_event_handle = _event_loop.call_at(next_expiration, Framework.timeEventCallback, next_event, next_expiration)
+                    if len(Framework._time_events) > 0:
+                        next_expiration = min(Framework._time_events.keys())
+                        next_event = Framework._time_events[next_expiration]
+                        _tm_event_handle = Framework._event_loop.call_at(next_expiration, Framework.timeEventCallback, next_event, next_expiration)
                     else:
                         _tm_event_handle = None
                 break
@@ -135,15 +135,21 @@ class Framework(object):
         If the TimeEvent is periodic, re-insort the event 
         in the list of active time events.
         """
+        assert expiration in Framework._time_events
+
         # Remove this expired TimeEvent from the active list
-        del _time_events[expiration]
+        del Framework._time_events[expiration]
         _tm_event_handle = None
 
+        # Post the event to the target Ahsm
         tm_event.act.postFIFO(tm_event)
 
         # If this is a periodic time event, schedule its next expiration
         if tm_event.interval > 0:
             Framework._insortTimeEvent(tm_event, expiration + tm_event.interval)
+
+        # Run to completion
+        Framework._event_loop.call_soon(Framework.run)
 
 
     @staticmethod
@@ -156,7 +162,8 @@ class Framework(object):
 
     @staticmethod
     def run():
-        """Finds the highest-priority Ahsm with an event to process and dispatches it.
+        """Dispatches an event to the highest priority Ahsm
+        until all event queues are empty (i.e. Run To Completion).
         """
         getPriority = lambda x : x.priority
 
@@ -165,11 +172,10 @@ class Framework(object):
             sorted_acts = sorted(Framework._ahsm_registry.values(), key=getPriority)
             for act in sorted_acts:
                 if len(act.mq) > 0:
-                    act.dispatch(act, act.mq.pop())
+                    event_next = act.mq.pop()
+                    print("Dispatch: {0} to {1}".format(event_next, act))
+                    act.dispatch(act, event_next)
                     allQueuesEmpty = False
                     break
             if allQueuesEmpty:
-                pass
-                #onIdle
-                # set timer for next callback
-                # ?? how to handle next time event ?
+                return

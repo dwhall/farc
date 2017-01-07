@@ -1,21 +1,9 @@
-from collections import namedtuple
-
-from pq import Signal
-
-
-Event = namedtuple("Event", ["signal", "value"])
-
-# Instantiate the reserved (system) events
-Event.EMPTY = Event(Signal.EMPTY, None)
-Event.ENTRY = Event(Signal.ENTRY, None)
-Event.EXIT = Event(Signal.EXIT, None)
-Event.INIT = Event(Signal.INIT, None)
-
-# The order of this tuple MUST match their respective signals
-Event.reserved = (Event.EMPTY, Event.ENTRY, Event.EXIT, Event.INIT)
+from .Ahsm import Ahsm
+from .Signal import Signal
+from .Framework import Framework
 
 
-class TimeEvent(Event):
+class TimeEvent(object):
     """TimeEvent is a composite class that contains an Event.
     A TimeEvent is created by the application and added to the Framework.
     The Framework then emits the event after the given delay.
@@ -23,8 +11,8 @@ class TimeEvent(Event):
     A periodic TimeEvent is created by calling the postEvery() method.
     """
     def __init__(self, signame):
-        sigid = Signal.register(signame)
-        self.signal = sigid
+        assert type(signame) == str
+        self.signal = Signal.register(signame)
         self.value = None
 
 
@@ -34,7 +22,7 @@ class TimeEvent(Event):
         assert issubclass(type(act), Ahsm)
         self.act = act
         self.interval = 0
-        Framework.addTimeEvent(self, act, delta)
+        Framework.addTimeEvent(self, delta)
 
 
     def postEvery(self, act, delta):
@@ -44,7 +32,7 @@ class TimeEvent(Event):
         assert issubclass(type(act), Ahsm)
         self.act = act
         self.interval = delta
-        Framework.addTimeEvent(self, act, delta)
+        Framework.addTimeEvent(self, delta)
 
 
     def disarm(self):
@@ -54,6 +42,6 @@ class TimeEvent(Event):
         Framework.removeTimeEvent(self)
 
 
-# Key Events
+# Keyboard Events
 # at init time, either copy from app6.py or use urwid
 

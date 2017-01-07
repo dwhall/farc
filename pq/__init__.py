@@ -1,5 +1,6 @@
-from pq.Signal import Signal
-from pq.EventProcessor import Event, TimeEvent
-from pq.Hsm import Hsm
-from pq.Framework import Framework
-from pq.Ahsm import Ahsm
+from .Signal import Signal
+from .Event import Event
+from .EventProcessor import TimeEvent
+from .Hsm import Hsm
+from .Framework import Framework
+from .Ahsm import Ahsm
