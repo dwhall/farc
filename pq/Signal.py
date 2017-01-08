@@ -45,3 +45,7 @@ Signal.register("EMPTY") # 0
 Signal.register("ENTRY") # 1
 Signal.register("EXIT")  # 2
 Signal.register("INIT")  # 3
+
+# Signals that mirror POSIX signals
+Signal.register("SIGINT")  # (i.e. Ctrl+C)
+Signal.register("SIGTERM") # (i.e. kill <pid>)

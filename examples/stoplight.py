@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 
-import asyncio, signal
+import asyncio
 
 from pq import *
 
@@ -54,19 +54,10 @@ class Stoplight(Ahsm):
         return me.super(me, me.top)
 
 
-def on_sigint(loop):
-    """Callback for when ctrl+c is pressed
-    """
-    print("Bye.")
-    loop.stop()
-
-
 if __name__ == "__main__":
     sl = Stoplight(Stoplight.initial)
     sl.start(0)
 
     loop = asyncio.get_event_loop()
-    loop.add_signal_handler(signal.SIGINT, on_sigint, loop)
-    loop.add_signal_handler(signal.SIGTERM, on_sigint, loop)
     loop.run_forever()
     loop.close()

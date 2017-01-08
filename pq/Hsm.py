@@ -43,7 +43,16 @@ class Hsm(object):
     @staticmethod
     def super(me, superState): me.state = superState; return Hsm.RET_SUPER # p. 158
     @staticmethod
-    def top(me, event): return Hsm.RET_IGNORED # p. 165
+    def top(me, event):
+        # Handle the Posix-like events to force the HSM
+        # to execute its Exit path all the way to the top
+        if Event.SIGINT == event:
+            return Hsm.RET_HANDLED
+        if Event.SIGTERM == event:
+            return Hsm.RET_HANDLED
+
+        # All other events are quietly ignored
+        return Hsm.RET_IGNORED # p. 165
 
 
     @staticmethod

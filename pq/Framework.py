@@ -1,10 +1,7 @@
-import asyncio, sys
+import asyncio, signal, sys
 
-#from Event
-
-
-#def getLoop():
-#    return BaseEventLoop.get_loop()
+from .Event import Event
+from .Signal import Signal
 
 
 class Framework(object):
@@ -179,3 +176,45 @@ class Framework(object):
                     break
             if allQueuesEmpty:
                 return
+
+
+    @staticmethod
+    def stop():
+        """EXITs all Ahsms and stop the event loop.
+        """
+        # Disable the timer callback
+        if Framework._tm_event_handle:
+            Framework._tm_event_handle.cancel()
+            Framework._tm_event_handle = None
+
+        # Post SIGTERM to all Ahsms so they execute their EXIT handler
+        for act in Framework._ahsm_registry.keys():
+            Framework.post(Event.SIGTERM, act)
+
+        # Run to completion so each Ahsm will process SIGTERM
+        Framework.run()
+        Framework._event_loop.stop()
+
+
+    @staticmethod
+    def handle_posix_signal(sig):
+        """Translates a POSIX signal to a pq event
+        and dispatches the even to the Framework, usually in a special way.
+
+        POSIX.SIGINT induces the Framework to issue an event that causes
+        all SMs to execute their exit handlers all the way to the top of the hierarchy.
+
+        NOTE: POSIX  signals come from the "signal" module
+              and pq Signals come from the "Signal" module.
+        """
+        if sig == signal.SIGINT:
+            # TODO:  replace stop() with code to re-init all Ahsms
+            Framework.stop()
+
+        elif sig == signal.SIGTERM:
+            Framework.stop()
+
+
+    # Bind a useful set of POSIX signals to the handler
+    _event_loop.add_signal_handler(signal.SIGINT, handle_posix_signal.__func__, signal.SIGINT)
+    _event_loop.add_signal_handler(signal.SIGTERM, handle_posix_signal.__func__, signal.SIGTERM)
