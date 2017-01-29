@@ -176,7 +176,7 @@ class Framework(object):
             for act in sorted_acts:
                 if len(act.mq) > 0:
                     event_next = act.mq.pop()
-                    print("Dispatch: {0} to {1}".format(event_next, act))
+#TODO: logging:      print("Dispatch: {0} to {1}".format(event_next, act))
                     act.dispatch(act, event_next)
                     allQueuesEmpty = False
                     break
@@ -186,7 +186,7 @@ class Framework(object):
 
     @staticmethod
     def stop():
-        """EXITs all Ahsms and stop the event loop.
+        """EXITs all Ahsms and stops the event loop.
         """
         # Disable the timer callback
         if Framework._tm_event_handle:
