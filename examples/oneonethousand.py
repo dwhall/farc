@@ -12,11 +12,11 @@ class Mississippi(Ahsm):
     def initial(me, event):
         print("initial")
     
-        me.te1000 = TimeEvent("TE1000")
-        me.te1000.postEvery(me, 0.001)
+        me.teCount = TimeEvent("COUNT")
+        me.teCount.postEvery(me, 0.001)
 
-        me.te1 = TimeEvent("TE1")
-        me.te1.postEvery(me, 1)
+        me.tePrint = TimeEvent("PRINT")
+        me.tePrint.postEvery(me, 1)
 
         me._count = 0
 
@@ -30,11 +30,11 @@ class Mississippi(Ahsm):
             print("count enter")
             return me.handled(me, event)
 
-        elif sig == Signal.TE1:
+        elif sig == Signal.PRINT:
             print(me._count, "millis")
             return me.handled(me, event)
 
-        elif sig == Signal.TE1000:
+        elif sig == Signal.COUNT:
             me._count += 1
             return me.handled(me, event)
 
