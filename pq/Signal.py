@@ -6,8 +6,8 @@ class Signal(object):
     p. 154
     """
 
-    _registry = {}
-    _lookup = []
+    _registry = {}  # signame:str to sigid:int
+    _lookup = []    # sigid:int to signame:str
 
 
     @staticmethod
@@ -31,8 +31,9 @@ class Signal(object):
             return sigid
 
 
-    def __getattr__(self, name):
-        return Signal._registry[name]
+    def __getattr__(self, signame):
+        assert type(signame) is str
+        return Signal._registry[signame]
 
 
 # Turn Signal into an instance of itself so getattr works.
