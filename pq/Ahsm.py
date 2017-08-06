@@ -12,6 +12,7 @@ class Ahsm(Hsm):
         Framework.add(self)
         self.mq = []
         self.init(self, initEvent)
+        Framework._event_loop.call_soon_threadsafe(Framework.run)
 
 
     def postLIFO(self, evt):
@@ -20,6 +21,7 @@ class Ahsm(Hsm):
 
     def postFIFO(self, evt):
         self.mq.insert(0, evt)
+
 
     def subscribe(self, sigstr): pass
     def unsubscribe(self, sig): pass

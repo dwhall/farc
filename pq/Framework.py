@@ -152,7 +152,7 @@ class Framework(object):
             Framework._tm_event_handle = Framework._event_loop.call_at(next_expiration, Framework.timeEventCallback, next_event, next_expiration)
 
         # Run to completion
-        Framework._event_loop.call_soon(Framework.run)
+        Framework._event_loop.call_soon_threadsafe(Framework.run)
 
 
     @staticmethod
