@@ -145,8 +145,8 @@ class Framework(object):
         if tm_event.interval > 0:
             Framework._insortTimeEvent(tm_event, expiration + tm_event.interval)
 
-        # If not set already, set the next event callback
-        if Framework._tm_event_handle == None:
+        # If not set already and there are more events, set the next event callback
+        if Framework._tm_event_handle == None and len(Framework._time_events) > 0:
             next_expiration = min(Framework._time_events.keys())
             next_event = Framework._time_events[next_expiration]
             Framework._tm_event_handle = Framework._event_loop.call_at(next_expiration, Framework.timeEventCallback, next_event, next_expiration)
