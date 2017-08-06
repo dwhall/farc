@@ -3,10 +3,10 @@
 
 import asyncio
 
-from pq import *
+import pq
 
 
-class Countdown(Ahsm):
+class Countdown(pq.Ahsm):
     def __init__(self, count=3):
         super().__init__(Countdown.initial)
         self.count = count
@@ -15,19 +15,19 @@ class Countdown(Ahsm):
     @staticmethod
     def initial(me, event):
         print("initial")
-        me.te = TimeEvent("TIME_TICK")
+        me.te = pq.TimeEvent("TIME_TICK")
         return me.tran(me, Countdown.counting)
 
 
     @staticmethod
     def counting(me, event):
         sig = event.signal
-        if sig == Signal.ENTRY:
+        if sig == pq.Signal.ENTRY:
             print("counting")
             me.te.postIn(me, 1.0)
             return me.handled(me, event)
 
-        elif sig == Signal.TIME_TICK:
+        elif sig == pq.Signal.TIME_TICK:
             print(me.count)
 
             if me.count == 0:
@@ -43,7 +43,7 @@ class Countdown(Ahsm):
     @staticmethod
     def done(me, event):
         sig = event.signal
-        if sig == Signal.ENTRY:
+        if sig == pq.Signal.ENTRY:
             print("done")
             return me.handled(me, event)
 
