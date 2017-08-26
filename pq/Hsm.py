@@ -131,9 +131,8 @@ class Hsm(object):
             entry_path = []
             r = Hsm.RET_TRAN
             while me.state != Hsm.top:
-                t = me.state
-                entry_path.append(t)
-                Hsm.trig(me, t, Signal.EMPTY)
+                entry_path.append(me.state)
+                Hsm.trig(me, me.state, Signal.EMPTY)
 
             # Find the Least Common Ancestor between the source and target
             i = -1
