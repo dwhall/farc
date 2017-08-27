@@ -56,7 +56,7 @@ class Framework(object):
         that is subscribed to the event's signal.
         """
         if event.signal in Framework._subscriberTable:
-            for act in Framework._subscriberTable[sig]:
+            for act in Framework._subscriberTable[event.signal]:
                 act.postFIFO(event)
 
 
