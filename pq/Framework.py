@@ -29,6 +29,12 @@ class Framework(object):
     # to every Ahsm that has subscribed to the Signal
     _mq = asyncio.PriorityQueue()
 
+    # The Subscriber Table is a dictionary.  The keys are signals.
+    # The value for each key is a list of Ahsms that are subscribed to the signal.
+    # An Ahsm may subscribe to a signal at any time during runtime.
+    _subscriberTable = {}
+
+    
     @staticmethod
     def post(event, actname):
         """Posts the event to the given Ahsm's event queue. (act name for greater decoupling).
