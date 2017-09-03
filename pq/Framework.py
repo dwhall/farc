@@ -58,6 +58,8 @@ class Framework(object):
         if event.signal in Framework._subscriberTable:
             for act in Framework._subscriberTable[event.signal]:
                 act.postFIFO(event)
+        # Run to completion
+        Framework._event_loop.call_soon_threadsafe(Framework.run)
 
 
     @staticmethod
@@ -116,11 +118,11 @@ class Framework(object):
         """
         for k,v in Framework._time_events.items():
             if v is tm_event:
-                del Framework._time_events[k]
 
                 # If the event being removed is scheduled for callback,
                 # cancel and schedule the next event if there is one
                 if k == min(Framework._time_events.keys()):
+                    del Framework._time_events[k]
                     Framework._tm_event_handle.cancel()
                     if len(Framework._time_events) > 0:
                         next_expiration = min(Framework._time_events.keys())
@@ -128,6 +130,8 @@ class Framework(object):
                         Framework._tm_event_handle = Framework._event_loop.call_at(next_expiration, Framework.timeEventCallback, next_event, next_expiration)
                     else:
                         Framework._tm_event_handle = None
+                else:
+                    del Framework._time_events[k]
                 break
 
 
