@@ -106,6 +106,9 @@ class Hsm(object):
         p. 174
         """
 
+        # Save the current state
+        t = me.state
+
         # Proceed to superstates if event is not handled
         exit_path = []
         r = Hsm.RET_SUPER
@@ -153,6 +156,9 @@ class Hsm(object):
 
             # Arrive at the target state
             me.state = t
+
+        # Restore the current state
+        me.state = t
 
 
     @staticmethod
