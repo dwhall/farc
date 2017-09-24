@@ -21,7 +21,3 @@ class Ahsm(Hsm):
 
     def postFIFO(self, evt):
         self.mq.insert(0, evt)
-
-
-    def subscribe(self, sigstr): pass
-    def unsubscribe(self, sig): pass
