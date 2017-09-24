@@ -123,7 +123,8 @@ class Framework(object):
                 # cancel and schedule the next event if there is one
                 if k == min(Framework._time_events.keys()):
                     del Framework._time_events[k]
-                    Framework._tm_event_handle.cancel()
+                    if Framework._tm_event_handle:
+                        Framework._tm_event_handle.cancel()
                     if len(Framework._time_events) > 0:
                         next_expiration = min(Framework._time_events.keys())
                         next_event = Framework._time_events[next_expiration]
