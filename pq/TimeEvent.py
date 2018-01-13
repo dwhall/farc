@@ -1,3 +1,8 @@
+"""
+Copyright 2017 Dean Hall.  See LICENSE file for details.
+"""
+
+
 from .Ahsm import Ahsm
 from .Signal import Signal
 from .Framework import Framework
@@ -40,8 +45,3 @@ class TimeEvent(object):
         """
         self.act = None
         Framework.removeTimeEvent(self)
-
-
-# Keyboard Events
-# at init time, either copy from app6.py or use urwid
-

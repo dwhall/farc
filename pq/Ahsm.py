@@ -1,3 +1,8 @@
+"""
+Copyright 2017 Dean Hall.  See LICENSE file for details.
+"""
+
+
 from .Hsm import Hsm
 from .Framework import Framework
 

@@ -1,9 +1,13 @@
+"""
+Copyright 2017 Dean Hall.  See LICENSE file for details.
+"""
+
 from .Signal import Signal
 from .Event import Event
 
 
 class Hsm(object):
-    """A Hierarchical State Machine (HSM) framework.
+    """A Hierarchical State Machine (HSM).
     Full support for hierarchical state nesting.
     Guaranteed entry/exit action execution on arbitrary state transitions.
     Full support of nested initial transitions.
@@ -15,7 +19,7 @@ class Hsm(object):
     RET_IGNORED = 1
     RET_TRAN = 2
     RET_SUPER = 3
-    # In C code but not in book
+    # In qp's C code but not described in book
     # RET_UNHANDLED
     # RET_ENTRY
     # RET_EXIT

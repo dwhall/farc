@@ -1,3 +1,6 @@
+"""
+Copyright 2017 Dean Hall.  See LICENSE file for details.
+"""
 
 
 class Signal(object):
@@ -12,6 +15,8 @@ class Signal(object):
 
     @staticmethod
     def exists(signame):
+        """Returns True if signame is in the Signal registry.
+        """
         return signame in _registry
 
 

@@ -1,3 +1,7 @@
+"""
+Copyright 2017 Dean Hall.  See LICENSE file for details.
+"""
+
 import asyncio, signal, sys
 
 from .Event import Event
@@ -5,6 +9,11 @@ from .Signal import Signal
 
 
 class Framework(object):
+    """The pq framework is a composite class that holds the asyncio event loop,
+    the registry of AHSMs, the set of TimeEvents (and the handle to the next one)
+    and the table subscriptions to events.
+    """
+
     _event_loop = asyncio.get_event_loop()
 
     # The Framework maintains a registry of Ahsms in a dict.
@@ -22,12 +31,6 @@ class Framework(object):
     # When a TimeEvent is scheduled for the timeEventCallback(), 
     # a handle is kept so that the callback may be cancelled if necessary.
     _tm_event_handle = None
-
-    # The message queue is priority based.  Messages are added to the queue
-    # through the post() and publish() methods.  post() adds one message
-    # to the queue directed at a specific Ahsm.  publish() copies one message
-    # to every Ahsm that has subscribed to the Signal
-    _mq = asyncio.PriorityQueue()
 
     # The Subscriber Table is a dictionary.  The keys are signals.
     # The value for each key is a list of Ahsms that are subscribed to the signal.
