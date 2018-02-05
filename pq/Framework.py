@@ -81,12 +81,19 @@ class Framework(object):
         """Adds the TimeEvent to the list of active time events in the Framework.
         The event will fire its signal (to the TimeEvent's target Ahsm) after the delay, delta.
         """
-        assert tm_event not in Framework._time_events.values()
-
-        # Calculate the TimeEvent's expiration 
         expiration = Framework._event_loop.time() + delta
+        Framework.addTimeEventAt(tm_event, expiration)
 
-        Framework._insortTimeEvent(tm_event, expiration)
+
+    @staticmethod
+    def addTimeEventAt(tm_event, abs_time):
+        """Adds the TimeEvent to the list of active time events in the Framework.
+        The event will fire its signal (to the TimeEvent's target Ahsm) 
+        at the given time (_event_loop.time()).
+        """
+        assert tm_event not in Framework._time_events.values()
+        assert abs_time > Framework._event_loop.time()
+        Framework._insortTimeEvent(tm_event, abs_time)
 
 
     @staticmethod

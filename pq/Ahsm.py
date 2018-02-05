@@ -12,7 +12,8 @@ class Ahsm(Hsm):
     Adds a priority, message queue and methods to post to the queue.
     """
 
-    def start(self, priority, initEvent=None): 
+    def start(self, priority, initEvent=None):
+        #TODO: assert Framework.priority_is_unique(priority)
         self.priority = priority
         Framework.add(self)
         self.mq = []

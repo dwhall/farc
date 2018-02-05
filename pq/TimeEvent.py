@@ -21,6 +21,15 @@ class TimeEvent(object):
         self.value = None
 
 
+    def postAt(self, act, abs_time):
+        """Posts this TimeEvent to the given Ahsm at a specified time.
+        """
+        assert issubclass(type(act), Ahsm)
+        self.act = act
+        self.interval = 0
+        Framework.addTimeEventAt(self, abs_time)
+
+
     def postIn(self, act, delta):
         """Posts this TimeEvent to the given Ahsm after the time delta.
         """
