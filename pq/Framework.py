@@ -37,7 +37,7 @@ class Framework(object):
     # An Ahsm may subscribe to a signal at any time during runtime.
     _subscriberTable = {}
 
-    
+
     @staticmethod
     def post(event, actname):
         """Posts the event to the given Ahsm's event queue. (act name for greater decoupling).
@@ -92,7 +92,6 @@ class Framework(object):
         at the given time (_event_loop.time()).
         """
         assert tm_event not in Framework._time_events.values()
-        assert abs_time > Framework._event_loop.time()
         Framework._insortTimeEvent(tm_event, abs_time)
 
 
@@ -103,6 +102,12 @@ class Framework(object):
         No two timers should expire at the same time (key collision in the Dict),
         so we add the smallest amount of time to any duplicate expiration time.
         """
+        # If the event is to happen in the past, post it now
+        now = Framework._event_loop.time()
+        if expiration < now:
+            tm_event.act.postFIFO(tm_event)
+            # TODO: if periodic, need to schedule next?
+
         # If an event already occupies this expiration time, 
         # increase this event's expiration by the smallest measurable amount
         while expiration in Framework._time_events.keys():
