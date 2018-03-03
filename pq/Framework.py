@@ -35,7 +35,7 @@ class Framework(object):
     # The Subscriber Table is a dictionary.  The keys are signals.
     # The value for each key is a list of Ahsms that are subscribed to the signal.
     # An Ahsm may subscribe to a signal at any time during runtime.
-    _subscriberTable = {}
+    _subscriber_table = {}
 
 
     @staticmethod
@@ -50,7 +50,7 @@ class Framework(object):
     def psInit():
         """Initialize the publish/subscribe system.
         """
-        Framework._subscriberTable = {} # Key is Signal, Value is list of subscribers (instances of Ahsm)
+        Framework._subscriber_table = {} # Key is Signal, Value is list of subscribers (instances of Ahsm)
 
 
     @staticmethod
@@ -58,8 +58,8 @@ class Framework(object):
         """Posts the event to the message queue of every Ahsm
         that is subscribed to the event's signal.
         """
-        if event.signal in Framework._subscriberTable:
-            for act in Framework._subscriberTable[event.signal]:
+        if event.signal in Framework._subscriber_table:
+            for act in Framework._subscriber_table[event.signal]:
                 act.postFIFO(event)
         # Run to completion
         Framework._event_loop.call_soon_threadsafe(Framework.run)
@@ -71,9 +71,9 @@ class Framework(object):
         for the given signal (signal name for greater decoupling).
         """
         sigid = Signal.register(signame)
-        if sigid not in Framework._subscriberTable:
-            Framework._subscriberTable[sigid] = []
-        Framework._subscriberTable[sigid].append(act)
+        if sigid not in Framework._subscriber_table:
+            Framework._subscriber_table[sigid] = []
+        Framework._subscriber_table[sigid].append(act)
 
 
     @staticmethod
