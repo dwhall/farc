@@ -156,7 +156,7 @@ class Hsm(object):
             # This is done in the reverse order of the path
             for st in entry_path[n::-1]:
                 r = Hsm.enter(me, st)
-                assert r == Hsm.RET_HANDLED
+                assert r == Hsm.RET_HANDLED, "Expected ENTRY to return HANDLED transitioning to {0}".format(t)
 
             # Arrive at the target state
             me.state = t

@@ -47,13 +47,6 @@ class Framework(object):
 
 
     @staticmethod
-    def psInit():
-        """Initialize the publish/subscribe system.
-        """
-        Framework._subscriber_table = {} # Key is Signal, Value is list of subscribers (instances of Ahsm)
-
-
-    @staticmethod
     def publish(event):
         """Posts the event to the message queue of every Ahsm
         that is subscribed to the event's signal.
