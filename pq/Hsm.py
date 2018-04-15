@@ -70,7 +70,7 @@ class Hsm(object):
         # There MUST be an initial transition
         assert me.initialState(me, event) == Hsm.RET_TRAN
 
-        # HWM starts in the top state
+        # HSM starts in the top state
         t = Hsm.top
 
         # Drill into the target

@@ -22,8 +22,9 @@ Event.ENTRY = Event(Signal.ENTRY, None)
 Event.EXIT = Event(Signal.EXIT, None)
 Event.INIT = Event(Signal.INIT, None)
 
-Event.SIGINT = Event(Signal.SIGINT, None)
-Event.SIGTERM = Event(Signal.SIGTERM, None)
+# Events for POSIX signals
+Event.SIGINT = Event(Signal.SIGINT, None)   # (i.e. Ctrl+C)
+Event.SIGTERM = Event(Signal.SIGTERM, None) # (i.e. kill <pid>)
 
 # The order of this tuple MUST match their respective signals
 Event.reserved = (Event.EMPTY, Event.ENTRY, Event.EXIT, Event.INIT)

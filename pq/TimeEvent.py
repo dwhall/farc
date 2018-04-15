@@ -12,7 +12,7 @@ class TimeEvent(object):
     """TimeEvent is a composite class that contains an Event.
     A TimeEvent is created by the application and added to the Framework.
     The Framework then emits the event after the given delay.
-    A one-shot TimeEvent is created by calling the postIn() method.
+    A one-shot TimeEvent is created by calling either postAt() or postIn().
     A periodic TimeEvent is created by calling the postEvery() method.
     """
     def __init__(self, signame):

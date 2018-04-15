@@ -40,7 +40,10 @@ class Framework(object):
 
     @staticmethod
     def post(event, actname):
-        """Posts the event to the given Ahsm's event queue. (act name for greater decoupling).
+        """Posts the event to the given Ahsm's event queue.
+        The argument, actname, is a string of the name of the class to which
+        the event is sent.  A string is used so the actual class definition
+        need not be present during compile time.
         """
         act = Framework._ahsm_registry[actname]
         act.postFIFO(event)
@@ -61,7 +64,9 @@ class Framework(object):
     @staticmethod
     def subscribe(signame, act):
         """Adds the given Ahsm to the subscriber table list
-        for the given signal (signal name for greater decoupling).
+        for the given signal.  The argument, signame, is a string of the name
+        of the Signal to which the Ahsm is subscribing.  Using a string allows
+        the Signal to be created in the registry if it is not already.
         """
         sigid = Signal.register(signame)
         if sigid not in Framework._subscriber_table:
@@ -82,7 +87,7 @@ class Framework(object):
     def addTimeEventAt(tm_event, abs_time):
         """Adds the TimeEvent to the list of active time events in the Framework.
         The event will fire its signal (to the TimeEvent's target Ahsm) 
-        at the given time (_event_loop.time()).
+        at the given absolute time (_event_loop.time()).
         """
         assert tm_event not in Framework._time_events.values()
         Framework._insortTimeEvent(tm_event, abs_time)
