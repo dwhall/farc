@@ -16,9 +16,8 @@ class Framework(object):
 
     _event_loop = asyncio.get_event_loop()
 
-    # The Framework maintains a registry of Ahsms in a dict.
-    # The name of the Ahsm is the key and the instance is the value.
-    _ahsm_registry = {}
+    # The Framework maintains a registry of Ahsms in a list.
+    _ahsm_registry = []
 
     # The Framework maintains a group of TimeEvents in a dict.
     # The next expiration of the TimeEvent is the key and the event is the value.
@@ -26,9 +25,9 @@ class Framework(object):
     # As TimeEvents are added and removed, the scheduled callback must be re-evaluated.
     # Periodic TimeEvents should only have one entry in the dict: the next expiration.
     # The timeEventCallback() will add a Periodic TimeEvent back into the dict with its next expiration.
-    _time_events = {} 
+    _time_events = {}
 
-    # When a TimeEvent is scheduled for the timeEventCallback(), 
+    # When a TimeEvent is scheduled for the timeEventCallback(),
     # a handle is kept so that the callback may be cancelled if necessary.
     _tm_event_handle = None
 
@@ -39,14 +38,20 @@ class Framework(object):
 
 
     @staticmethod
-    def post(event, actname):
+    def post(event, act):
         """Posts the event to the given Ahsm's event queue.
-        The argument, actname, is a string of the name of the class to which
-        the event is sent.  A string is used so the actual class definition
-        need not be present during compile time.
+        The argument, act, is either a string of the name of the class to which
+        the event is sent or the Ahsm instance itself.
+        If the argument is a string, the event will post to all actors having the given classname
         """
-        act = Framework._ahsm_registry[actname]
-        act.postFIFO(event)
+        if type(act) is str:
+            # I'm not convinced this is appropriate for the long term.
+            # post() should target one actor and publish() targets many.
+            # This was created to support legacy apps which use an actor's class name as the target.
+            # If this goes away, apps will need to adapt.
+            [a.postFIFO(event) for a in Framework._ahsm_registry if a.__class__.__name__ == act]
+        else:
+            act.postFIFO(event)
 
 
     @staticmethod
@@ -86,7 +91,7 @@ class Framework(object):
     @staticmethod
     def addTimeEventAt(tm_event, abs_time):
         """Adds the TimeEvent to the list of active time events in the Framework.
-        The event will fire its signal (to the TimeEvent's target Ahsm) 
+        The event will fire its signal (to the TimeEvent's target Ahsm)
         at the given absolute time (_event_loop.time()).
         """
         assert tm_event not in Framework._time_events.values()
@@ -106,7 +111,7 @@ class Framework(object):
             tm_event.act.postFIFO(tm_event)
             # TODO: if periodic, need to schedule next?
 
-        # If an event already occupies this expiration time, 
+        # If an event already occupies this expiration time,
         # increase this event's expiration by the smallest measurable amount
         while expiration in Framework._time_events.keys():
             expiration += sys.float_info.epsilon
@@ -153,7 +158,7 @@ class Framework(object):
     def timeEventCallback(tm_event, expiration):
         """The callback function for all TimeEvents.
         Posts the event to the event's target Ahsm.
-        If the TimeEvent is periodic, re-insort the event 
+        If the TimeEvent is periodic, re-insort the event
         in the list of active time events.
         """
         assert expiration in Framework._time_events.keys(), "Exp:%d _time_events.keys():%s" % ( expiration, Framework._time_events.keys() )
@@ -183,8 +188,7 @@ class Framework(object):
     def add(act):
         """Makes the framework aware of the given Ahsm.
         """
-        assert act.__class__.__name__ not in Framework._ahsm_registry
-        Framework._ahsm_registry[act.__class__.__name__] = act
+        Framework._ahsm_registry.append(act)
 
 
     @staticmethod
@@ -196,7 +200,7 @@ class Framework(object):
 
         while True:
             allQueuesEmpty = True
-            sorted_acts = sorted(Framework._ahsm_registry.values(), key=getPriority)
+            sorted_acts = sorted(Framework._ahsm_registry, key=getPriority)
             for act in sorted_acts:
                 if len(act.mq) > 0:
                     event_next = act.mq.pop()
@@ -218,7 +222,7 @@ class Framework(object):
             Framework._tm_event_handle = None
 
         # Post SIGTERM to all Ahsms so they execute their EXIT handler
-        for act in Framework._ahsm_registry.keys():
+        for act in Framework._ahsm_registry:
             Framework.post(Event.SIGTERM, act)
 
         # Run to completion so each Ahsm will process SIGTERM
