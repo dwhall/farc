@@ -249,6 +249,9 @@ class Framework(object):
             Framework.stop()
 
 
-    # Bind a useful set of POSIX signals to the handler
-    _event_loop.add_signal_handler(signal.SIGINT, handle_posix_signal.__func__, signal.SIGINT)
-    _event_loop.add_signal_handler(signal.SIGTERM, handle_posix_signal.__func__, signal.SIGTERM)
+    # Bind a useful set of POSIX signals to the handler (dismiss a NotImplementedError on Windows)
+    try:
+        _event_loop.add_signal_handler(signal.SIGINT, handle_posix_signal.__func__, signal.SIGINT)
+        _event_loop.add_signal_handler(signal.SIGTERM, handle_posix_signal.__func__, signal.SIGTERM)
+    except NotImplementedError:
+        pass
