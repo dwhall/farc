@@ -6,6 +6,7 @@ import asyncio, math, signal, sys
 
 from .Event import Event
 from .Signal import Signal
+from .Hsm import Hsm
 
 
 class Framework(object):
@@ -18,6 +19,13 @@ class Framework(object):
 
     # The Framework maintains a registry of Ahsms in a list.
     _ahsm_registry = []
+
+    # The Framework maintains a dict of priorities so that no two
+    # Ahsms may have the same priority.
+    # Then Ahsm's priority is checked in the Ahsm's start method
+    # when the Ahsm is added to the Framework.
+    # The dict's key is the priority (integer) and the value is the Ahsm.
+    _priority_dict = {}
 
     # The Framework maintains a group of TimeEvents in a dict.
     # The next expiration of the TimeEvent is the key and the event is the value.
@@ -51,6 +59,7 @@ class Framework(object):
             # If this goes away, apps will need to adapt.
             [a.postFIFO(event) for a in Framework._ahsm_registry if a.__class__.__name__ == act]
         else:
+            assert isinstance(act, Hsm)
             act.postFIFO(event)
 
 
@@ -190,6 +199,8 @@ class Framework(object):
         """Makes the framework aware of the given Ahsm.
         """
         Framework._ahsm_registry.append(act)
+        assert act.priority not in Framework._priority_dict, "Priority MUST be unique"
+        Framework._priority_dict[act.priority] = act
 
 
     @staticmethod

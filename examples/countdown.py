@@ -45,6 +45,7 @@ class Countdown(pq.Ahsm):
         sig = event.signal
         if sig == pq.Signal.ENTRY:
             print("done")
+            pq.Framework.stop()
             return me.handled(me, event)
 
         return me.super(me, me.top)

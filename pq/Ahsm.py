@@ -13,11 +13,13 @@ class Ahsm(Hsm):
     """
 
     def start(self, priority, initEvent=None):
-        #TODO: assert Framework.priority_is_unique(priority)
+        # add the priority first so that Framework.add()
+        # can ensure the priority is unique
         self.priority = priority
         Framework.add(self)
         self.mq = []
         self.init(self, initEvent)
+        # Run to completion
         Framework._event_loop.call_soon_threadsafe(Framework.run)
 
 
