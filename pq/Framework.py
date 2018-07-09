@@ -2,7 +2,10 @@
 Copyright 2017 Dean Hall.  See LICENSE file for details.
 """
 
-import asyncio, math, signal, sys
+import asyncio
+import math
+import signal
+import sys
 
 from .Event import Event
 from .Signal import Signal

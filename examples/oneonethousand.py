@@ -3,39 +3,35 @@
 
 import asyncio
 
-from pq import *
+import pq
 
 
-class Mississippi(Ahsm):
+class Mississippi(pq.Ahsm):
 
     @staticmethod
     def initial(me, event):
         print("initial")
-    
-        me.teCount = TimeEvent("COUNT")
-        me.teCount.postEvery(me, 0.001)
-
-        me.tePrint = TimeEvent("PRINT")
-        me.tePrint.postEvery(me, 1)
-
-        me._count = 0
-
-        return me.tran(me, Mississippi.count)
+        me.teCount = pq.TimeEvent("COUNT")
+        me.tePrint = pq.TimeEvent("PRINT")
+        return me.tran(me, Mississippi.counting)
 
 
     @staticmethod
-    def count(me, event):
+    def counting(me, event):
         sig = event.signal
-        if sig == Signal.ENTRY:
-            print("count enter")
+        if sig == pq.Signal.ENTRY:
+            print("counting enter")
+            me._count = 0
+            me.teCount.postEvery(me, 0.001)
+            me.tePrint.postEvery(me, 1.000)
             return me.handled(me, event)
 
-        elif sig == Signal.PRINT:
-            print(me._count, "millis")
-            return me.handled(me, event)
-
-        elif sig == Signal.COUNT:
+        elif sig == pq.Signal.COUNT:
             me._count += 1
+            return me.handled(me, event)
+
+        elif sig == pq.Signal.PRINT:
+            print(me._count, "millis")
             return me.handled(me, event)
 
         return me.super(me, me.top)

@@ -3,33 +3,31 @@
 
 import asyncio
 
-from pq import *
+import pq
 
 
-class Three(Ahsm):
+class Three(pq.Ahsm):
 
     @staticmethod
     def initial(me, event):
         print("Three initial")
-    
-        me.te = TimeEvent("TICK3")
-        me.te.postEvery(me, 3)
-
-        return me.tran(me, Three.three)
+        me.te = pq.TimeEvent("TICK3")
+        return me.tran(me, Three.running)
 
 
     @staticmethod
-    def three(me, event):
+    def running(me, event):
         sig = event.signal
-        if sig == Signal.ENTRY:
+        if sig == pq.Signal.ENTRY:
             print("three enter")
+            me.te.postEvery(me, 3)
             return me.handled(me, event)
 
-        elif sig == Signal.TICK3:
+        elif sig == pq.Signal.TICK3:
             print("three tick")
             return me.handled(me, event)
 
-        elif sig == Signal.EXIT:
+        elif sig == pq.Signal.EXIT:
             print("three exit")
             me.te.disarm()
             return me.handled(me, event)
@@ -37,30 +35,28 @@ class Three(Ahsm):
         return me.super(me, me.top)
 
 
-class Five(Ahsm):
+class Five(pq.Ahsm):
 
     @staticmethod
     def initial(me, event):
         print("Five initial")
-    
-        me.te = TimeEvent("TICK5")
-        me.te.postEvery(me, 5)
-
-        return me.tran(me, Five.five)
+        me.te = pq.TimeEvent("TICK5")
+        return me.tran(me, Five.running)
 
 
     @staticmethod
-    def five(me, event):
+    def running(me, event):
         sig = event.signal
-        if sig == Signal.ENTRY:
+        if sig == pq.Signal.ENTRY:
             print("five enter")
+            me.te.postEvery(me, 5)
             return me.handled(me, event)
 
-        elif sig == Signal.TICK5:
+        elif sig == pq.Signal.TICK5:
             print("five tick")
             return me.handled(me, event)
 
-        elif sig == Signal.EXIT:
+        elif sig == pq.Signal.EXIT:
             print("five exit")
             me.te.disarm()
             return me.handled(me, event)
@@ -70,10 +66,10 @@ class Five(Ahsm):
 
 if __name__ == "__main__":
     three = Three(Three.initial)
-    three.start(0)
+    three.start(3)
 
     five = Five(Five.initial)
-    five.start(0)
+    five.start(5)
 
     loop = asyncio.get_event_loop()
     loop.run_forever()

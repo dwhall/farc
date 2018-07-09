@@ -19,14 +19,15 @@ class Hsm(object):
     RET_IGNORED = 1
     RET_TRAN = 2
     RET_SUPER = 3
-    # In qp's C code but not described in book
+    # TODO: the following are in qp's C code
+    # but not described in book:
     # RET_UNHANDLED
     # RET_ENTRY
     # RET_EXIT
     # RET_INITIAL
 
 
-    def __init__(self, initialState): 
+    def __init__(self, initialState):
         self.state = self.top
         self.initialState = initialState
 
@@ -67,7 +68,7 @@ class Hsm(object):
         p. 172
         """
 
-        # There MUST be an initial transition
+        # The initial state MUST transition to another state
         assert me.initialState(me, event) == Hsm.RET_TRAN
 
         # HSM starts in the top state

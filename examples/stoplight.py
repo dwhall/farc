@@ -11,7 +11,7 @@ class Stoplight(Ahsm):
     @staticmethod
     def initial(me, event):
         print("Stoplight initial")
-    
+
         te = TimeEvent("TIME_TICK")
         te.postEvery(me, 2.0)
 
