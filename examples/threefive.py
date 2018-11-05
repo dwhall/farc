@@ -65,7 +65,7 @@ class Five(pq.Ahsm):
 
 
 if __name__ == "__main__":
-    pq.Framework.vcd_spy = True
+    #pq.Framework.enable_spy(pq.VcdSpy)
 
     three = Three(Three.initial)
     three.start(3)

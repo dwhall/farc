@@ -10,6 +10,7 @@ import sys
 from .Event import Event
 from .Signal import Signal
 from .Hsm import Hsm
+from .Spy import Spy
 
 
 class Framework(object):
@@ -46,16 +47,6 @@ class Framework(object):
     # The value for each key is a list of Ahsms that are subscribed to the signal.
     # An Ahsm may subscribe to a signal at any time during runtime.
     _subscriber_table = {}
-
-    # VcdSpy is the internal visual debugging/logging system used by pq.
-    # VcdSpy, if enabled, generates a Value Change Dump (vcd) file to be viewed
-    # after execution completes.  The vcd viewer application allows
-    # you to see a timeline of [A]Hsms, states, events and debug IDs
-    # which will help you make sense of what happened at run time.
-    # The programmer should set the following variable to True
-    # before any Ahsm is initialized (usually in the main function)
-    vcd_spy = False
-    _vcd_spy_initd = False
 
 
     @staticmethod
@@ -214,29 +205,7 @@ class Framework(object):
         Framework._ahsm_registry.append(act)
         assert act.priority not in Framework._priority_dict, "Priority MUST be unique"
         Framework._priority_dict[act.priority] = act
-
-        # VcdSpy: Register the Ahsm with the VCD writer
-        if Framework.vcd_spy:
-            if not Framework._vcd_spy_initd:
-                Framework._init_vcd_spy()
-            Framework._vcd_spy_ahsms[act.name] = (
-                Framework._vcd_spy_writer.register_var("tsk", act.name, "wire", size=1),
-                Framework._vcd_spy_writer.register_var("tsk", act.name + "_st", "integer")
-            )
-
-
-    @staticmethod
-    def _init_vcd_spy():
-        # NOTE: Import vcd here so that pyvcd is an optional package
-        global vcd
-        import vcd # pip3 install pyvcd
-        import datetime
-        import tempfile
-        timestamp = datetime.datetime.isoformat(datetime.datetime.now())
-        Framework._vcd_spy_file = tempfile.NamedTemporaryFile(mode='w', delete=False)
-        Framework._vcd_spy_writer = vcd.VCDWriter(Framework._vcd_spy_file, timescale='1 us', date=timestamp)
-        Framework._vcd_spy_ahsms = {}
-        Framework._vcd_spy_initd = True
+        Spy.on_framework_add(act)
 
 
     @staticmethod
@@ -252,8 +221,9 @@ class Framework(object):
             for act in sorted_acts:
                 if len(act.mq) > 0:
                     event_next = act.mq.pop()
-#TODO: logging:      print("Dispatch: {0} to {1}".format(event_next, act))
+                    Spy.on_framework_run_pre_dispatch(act, event_next)
                     act.dispatch(act, event_next)
+                    Spy.on_framework_run_post_dispatch(act)
                     allQueuesEmpty = False
                     break
             if allQueuesEmpty:
@@ -277,11 +247,7 @@ class Framework(object):
         Framework.run()
         Framework._event_loop.stop()
 
-        if Framework.vcd_spy:
-            fn = Framework._vcd_spy_file.name
-            Framework._vcd_spy_writer.close()
-            Framework._vcd_spy_file.close()
-            print("VcdSpy file: %s" % fn)
+        Spy.on_framework_stop()
 
 
     @staticmethod
@@ -309,3 +275,11 @@ class Framework(object):
         _event_loop.add_signal_handler(signal.SIGTERM, handle_posix_signal.__func__, signal.SIGTERM)
     except NotImplementedError:
         pass
+
+    @staticmethod
+    def enable_spy(spy_cls):
+        """Sets the Spy to use the given class
+        and initializes the Spy system.
+        """
+        globals()["Spy"] = spy_cls
+        Spy.init()
