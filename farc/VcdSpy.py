@@ -27,7 +27,7 @@ class VcdSpy(object):
         and registers variables that will be written to it.
         """
         # VcdSpy: Import vcd here (rather than at top of file)
-        # so that the pyvcd package is only required if it is used
+        # so that the pyvcd package is only required if VcdSpy is used
         global vcd
         import vcd # pip3 install pyvcd
         datestring = datetime.datetime.isoformat(datetime.datetime.now())
