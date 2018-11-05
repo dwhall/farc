@@ -3,51 +3,51 @@
 
 import asyncio
 
-from pq import *
+import pq
 
 
-class Stoplight(Ahsm):
+class Stoplight(pq.Ahsm):
 
-    @staticmethod
+    @pq.Hsm.state
     def initial(me, event):
         print("Stoplight initial")
 
-        te = TimeEvent("TIME_TICK")
+        te = pq.TimeEvent("TIME_TICK")
         te.postEvery(me, 2.0)
 
         return me.tran(me, Stoplight.red)
 
 
-    @staticmethod
+    @pq.Hsm.state
     def red(me, event):
         sig = event.signal
-        if sig == Signal.ENTRY:
+        if sig == pq.Signal.ENTRY:
             print("red enter")
             return me.handled(me, event)
 
-        elif sig == Signal.TIME_TICK:
+        elif sig == pq.Signal.TIME_TICK:
             print("red next")
             return me.tran(me, Stoplight.green)
 
-        elif sig == Signal.EXIT:
+        elif sig == pq.Signal.EXIT:
             print("red exit")
             return me.handled(me, event)
 
         return me.super(me, me.top)
 
 
-    @staticmethod
+    @pq.Hsm.state
     def green(me, event):
         sig = event.signal
-        if sig == Signal.ENTRY:
+        if sig == pq.Signal.ENTRY:
             print("green enter")
             return me.handled(me, event)
 
-        elif sig == Signal.TIME_TICK:
+        elif sig == pq.Signal.TIME_TICK:
             print("green next")
             return me.tran(me, Stoplight.red)
 
-        elif sig == Signal.EXIT:
+        elif sig == pq.Signal.EXIT:
             print("green exit")
             return me.handled(me, event)
 

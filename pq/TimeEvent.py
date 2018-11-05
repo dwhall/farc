@@ -3,9 +3,9 @@ Copyright 2017 Dean Hall.  See LICENSE file for details.
 """
 
 
-from .Ahsm import Ahsm
 from .Signal import Signal
 from .Framework import Framework
+from .Ahsm import Ahsm
 
 
 class TimeEvent(object):

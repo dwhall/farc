@@ -8,7 +8,7 @@ import pq
 
 class Mississippi(pq.Ahsm):
 
-    @staticmethod
+    @pq.Hsm.state
     def initial(me, event):
         print("initial")
         me.teCount = pq.TimeEvent("COUNT")
@@ -16,7 +16,7 @@ class Mississippi(pq.Ahsm):
         return me.tran(me, Mississippi.counting)
 
 
-    @staticmethod
+    @pq.Hsm.state
     def counting(me, event):
         sig = event.signal
         if sig == pq.Signal.ENTRY:

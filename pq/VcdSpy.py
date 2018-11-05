@@ -4,8 +4,10 @@ Copyright 2018 Dean Hall.  See LICENSE file for details.
 
 
 import datetime
+import inspect
 import tempfile
 
+from .Signal import Signal
 from .Framework import Framework
 
 
@@ -30,12 +32,13 @@ class VcdSpy(object):
         import vcd # pip3 install pyvcd
         datestring = datetime.datetime.isoformat(datetime.datetime.now())
         VcdSpy._vcd_file = tempfile.NamedTemporaryFile(mode='w', suffix=".vcd", delete=False)
-        w = vcd.VCDWriter(VcdSpy._vcd_file, timescale='1 us', date=datestring, init_timestamp=VcdSpy._get_timestamp())
-        VcdSpy._vcd_writer = w
-        VcdSpy._vcd_var_evnt = w.register_var("tsk", "evnt", "event")
-        VcdSpy._vcd_var_evnt_sig = w.register_var("tsk", "evnt_sig", "integer")
-        VcdSpy._vcd_var_evnt_dst = w.register_var("tsk", "evnt_dst", "integer")
-        VcdSpy._vcd_var_ahsm = {}
+        VcdSpy._vcd_writer = vcd.VCDWriter(VcdSpy._vcd_file, timescale='1 us', date=datestring, init_timestamp=VcdSpy._get_timestamp())
+        VcdSpy._vcd_var_state = {}
+        VcdSpy._vcd_var_sig = {}
+        # Handle signals that were registered before
+        # the application selected VcdSpy as the Spy class
+        for nm, id in Signal._registry.items():
+            VcdSpy.on_signal_register(nm, id)
 
 
     @staticmethod
@@ -50,10 +53,11 @@ class VcdSpy(object):
         """Registers the given Ahsm and creates VCDWriter vars
         used to trace the Ahsm's execution and state.
         """
-        VcdSpy._vcd_var_ahsm[act.name] = (
-            VcdSpy._vcd_writer.register_var("tsk", act.name, "wire", size=1),
-            VcdSpy._vcd_writer.register_var("tsk", act.name + "_st", "integer")
-        )
+        # for each state in the Actor's state machine
+        for nm, st in inspect.getmembers(act.__class__, predicate=inspect.isfunction):
+            if hasattr(st, "pq_state"):
+                st_lbl = "St%d_%s_%s" % (act.priority, act.__class__.__name__, nm)
+                VcdSpy._vcd_var_state[st.__hash__()] = VcdSpy._vcd_writer.register_var("tsk", st_lbl, "wire", size=1, init=0)
 
 
     @staticmethod
@@ -62,11 +66,8 @@ class VcdSpy(object):
         that is sent to the given Ahsm.
         """
         ts = VcdSpy._get_timestamp()
-        # Changes for pq.Event
-        VcdSpy._vcd_writer.change(VcdSpy._vcd_var_evnt, ts, 1)
-        VcdSpy._vcd_writer.change(VcdSpy._vcd_var_evnt_sig, ts, evt.signal)
-        VcdSpy._vcd_writer.change(VcdSpy._vcd_var_evnt_dst, ts, act.priority)
-        # TODO: Changes for pq.Ahsm
+        VcdSpy._vcd_writer.change(VcdSpy._vcd_var_sig[evt.signal], ts, 1)
+        VcdSpy._vcd_writer.change(VcdSpy._vcd_var_state[act.state.__hash__()], ts, 1)
 
 
     @staticmethod
@@ -75,8 +76,8 @@ class VcdSpy(object):
         that is sent to the given Ahsm.
         """
         ts = VcdSpy._get_timestamp()
-        # TODO: Changes for pq.Ahsm
-        # VcdSpy._vcd_writer.change(VcdSpy._vcd_var_evnt, ts, 0)
+        VcdSpy._vcd_writer.change(VcdSpy._vcd_var_state[act.state.__hash__()], ts, 0)
+
 
     @staticmethod
     def on_framework_stop():
@@ -86,3 +87,11 @@ class VcdSpy(object):
         VcdSpy._vcd_writer.close()
         VcdSpy._vcd_file.close()
         print("VcdSpy file: %s" % fn)
+
+
+    @staticmethod
+    def on_signal_register(signame, sigid):
+        """Registers a signal with the VcdWriter when that signal is registered with pq
+        """
+        sig_lbl = "Sig%d_%s" % (sigid, signame)
+        VcdSpy._vcd_var_sig[sigid] = VcdSpy._vcd_writer.register_var("tsk", sig_lbl, "event", size=1, init=0)

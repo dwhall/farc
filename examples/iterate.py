@@ -13,14 +13,14 @@ class Iterate(pq.Ahsm):
         self.count = count
 
 
-    @staticmethod
+    @pq.Hsm.state
     def initial(me, event):
         print("initial")
         me.iter_evt = pq.Event(pq.Signal.ITERATE, None)
         return me.tran(me, Iterate.iterating)
 
 
-    @staticmethod
+    @pq.Hsm.state
     def iterating(me, event):
         sig = event.signal
         if sig == pq.Signal.ENTRY:
@@ -42,11 +42,12 @@ class Iterate(pq.Ahsm):
         return me.super(me, me.top)
 
 
-    @staticmethod
+    @pq.Hsm.state
     def done(me, event):
         sig = event.signal
         if sig == pq.Signal.ENTRY:
             print("done")
+            pq.Framework.stop()
             return me.handled(me, event)
 
         return me.super(me, me.top)

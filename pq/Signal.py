@@ -2,6 +2,8 @@
 Copyright 2017 Dean Hall.  See LICENSE file for details.
 """
 
+from .Spy import Spy
+
 
 class Signal(object):
     """An asynchronous stimulus that triggers reactions.
@@ -17,7 +19,7 @@ class Signal(object):
     def exists(signame):
         """Returns True if signame is in the Signal registry.
         """
-        return signame in _registry
+        return signame in Signal._registry
 
 
     @staticmethod
@@ -33,6 +35,7 @@ class Signal(object):
             sigid = len(Signal._lookup)
             Signal._registry[signame] = sigid
             Signal._lookup.append(signame)
+            Spy.on_signal_register(signame, sigid)
             return sigid
 
 
@@ -41,6 +44,7 @@ class Signal(object):
         return Signal._registry[signame]
 
 
+# Singleton pattern:
 # Turn Signal into an instance of itself so getattr works.
 # This also prevents Signal() from creating a new instance.
 Signal = Signal()

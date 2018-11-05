@@ -167,5 +167,11 @@ class Hsm(object):
 
 
     @staticmethod
-    def isIn(me, state):
-        pass
+    def state(func):
+        """A decorator that helps outsiders identify which
+        methods are meant to be states.
+        The presence of the pq_state attr, not its value,
+        determines statehood.
+        """
+        setattr(func, "pq_state", True)
+        return staticmethod(func)

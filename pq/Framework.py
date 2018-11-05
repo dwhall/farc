@@ -7,10 +7,10 @@ import math
 import signal
 import sys
 
-from .Event import Event
-from .Signal import Signal
-from .Hsm import Hsm
 from .Spy import Spy
+from .Signal import Signal
+from .Event import Event
+from .Hsm import Hsm
 
 
 class Framework(object):

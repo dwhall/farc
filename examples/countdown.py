@@ -12,14 +12,14 @@ class Countdown(pq.Ahsm):
         self.count = count
 
 
-    @staticmethod
+    @pq.Hsm.state
     def initial(me, event):
         print("initial")
         me.te = pq.TimeEvent("TIME_TICK")
         return me.tran(me, Countdown.counting)
 
 
-    @staticmethod
+    @pq.Hsm.state
     def counting(me, event):
         sig = event.signal
         if sig == pq.Signal.ENTRY:
@@ -40,7 +40,7 @@ class Countdown(pq.Ahsm):
         return me.super(me, me.top)
 
 
-    @staticmethod
+    @pq.Hsm.state
     def done(me, event):
         sig = event.signal
         if sig == pq.Signal.ENTRY:
