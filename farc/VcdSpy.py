@@ -55,7 +55,7 @@ class VcdSpy(object):
         """
         # for each state in the Actor's state machine
         for nm, st in inspect.getmembers(act.__class__, predicate=inspect.isfunction):
-            if hasattr(st, "pq_state"):
+            if hasattr(st, "farc_state"):
                 st_lbl = "St%d_%s_%s" % (act.priority, act.__class__.__name__, nm)
                 VcdSpy._vcd_var_state[st.__hash__()] = VcdSpy._vcd_writer.register_var("tsk", st_lbl, "wire", size=1, init=0)
 
@@ -99,7 +99,7 @@ class VcdSpy(object):
 
     @staticmethod
     def on_signal_register(signame, sigid):
-        """Registers a signal with the VcdWriter when that signal is registered with pq
+        """Registers a signal with the VcdWriter when that signal is registered with farc
         """
         sig_lbl = "Sig%d_%s" % (sigid, signame)
         VcdSpy._vcd_var_sig[sigid] = VcdSpy._vcd_writer.register_var("tsk", sig_lbl, "event", size=1, init=0)

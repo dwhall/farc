@@ -14,7 +14,7 @@ from .Hsm import Hsm
 
 
 class Framework(object):
-    """The pq framework is a composite class that holds the asyncio event loop,
+    """Framework is a composite class that holds the asyncio event loop,
     the registry of AHSMs, the set of TimeEvents (and the handle to the next one)
     and the table subscriptions to events.
     """

@@ -11,15 +11,15 @@ dpp.py - the Dining Philosopher's Problem
 import asyncio
 import random
 
-import pq
+import farc
 
 
 N_PHILO = 10
 
-pq.Signal.register("EAT")
-pq.Signal.register("DONE")
-pq.Signal.register("TERMINATE")
-pq.Signal.register("HUNGRY")
+farc.Signal.register("EAT")
+farc.Signal.register("DONE")
+farc.Signal.register("TERMINATE")
+farc.Signal.register("HUNGRY")
 
 def PHILO_ID(act):
     global philo
@@ -37,20 +37,22 @@ def THINK_TIME():
 def EAT_TIME():
     return random.randrange(1, 9)
 
-class Table(pq.Ahsm):
+class Table(farc.Ahsm):
     def __init__(self, initialState):
         super(Table, self).__init__(initialState)
         self.fork = ["FREE",] * N_PHILO
         self.isHungry = [False,] * N_PHILO
 
+    @farc.Hsm.state
     def initial(self, event):
-        pq.Framework.subscribe("DONE", self)
-        pq.Framework.subscribe("TERMINATE", self)
+        farc.Framework.subscribe("DONE", self)
+        farc.Framework.subscribe("TERMINATE", self)
         return self.tran(self, Table.serving)
 
+    @farc.Hsm.state
     def serving(self, event):
         sig = event.signal
-        if sig == pq.Signal.HUNGRY:
+        if sig == farc.Signal.HUNGRY:
             # BSP.busyDelay()
             n = event.value
             assert n < N_PHILO and not self.isHungry[n]
@@ -59,14 +61,14 @@ class Table(pq.Ahsm):
             if self.fork[m] == "FREE" and self.fork[n] == "FREE":
                 self.fork[m] = "USED"
                 self.fork[n] = "USED"
-                e = pq.Event(pq.Signal.EAT, n)
-                pq.Framework.publish(e)
+                e = farc.Event(farc.Signal.EAT, n)
+                farc.Framework.publish(e)
                 print(n, "eating")
             else:
                 self.isHungry[n] = True
             return self.handled(self, event)
 
-        elif sig == pq.Signal.DONE:
+        elif sig == farc.Signal.DONE:
             # BSP.busyDelay()
             n = event.value
             assert n < N_PHILO and not self.isHungry[n]
@@ -80,8 +82,8 @@ class Table(pq.Ahsm):
                 self.fork[n] = "USED"
                 self.fork[m] = "USED"
                 self.isHungry[m] = False
-                e = pq.Event(pq.Signal.EAT, m)
-                pq.Framework.publish(e)
+                e = farc.Event(farc.Signal.EAT, m)
+                farc.Framework.publish(e)
                 print(m, "eating")
             m = LEFT(n)
             n = LEFT(m)
@@ -89,33 +91,36 @@ class Table(pq.Ahsm):
                 self.fork[m] = "USED"
                 self.fork[n] = "USED"
                 self.isHungry[m] = False
-                e = pq.Event(pq.Signal.EAT, m)
-                pq.Framework.publish(e)
+                e = farc.Event(farc.Signal.EAT, m)
+                farc.Framework.publish(e)
                 print(m, "eating")
             return self.handled(self, event)
 
-        elif sig == pq.Signal.TERMINATE:
-            pq.Framework.stop()
+        elif sig == farc.Signal.TERMINATE:
+            farc.Framework.stop()
 
         return self.super(self, self.top)
 
 
-class Philo(pq.Ahsm):
+class Philo(farc.Ahsm):
+
+    @farc.Hsm.state
     def initial(self, event):
-        self.timeEvt = pq.TimeEvent("TIMEOUT")
-        pq.Framework.subscribe("EAT", self)
+        self.timeEvt = farc.TimeEvent("TIMEOUT")
+        farc.Framework.subscribe("EAT", self)
         return self.tran(self, Philo.thinking)
 
+    @farc.Hsm.state
     def thinking(self, event):
         sig = event.signal
-        if sig == pq.Signal.ENTRY:
+        if sig == farc.Signal.ENTRY:
             self.timeEvt.postIn(self, THINK_TIME())
             status = self.handled(self, event)
 
-        elif sig == pq.Signal.TIMEOUT:
+        elif sig == farc.Signal.TIMEOUT:
             status = self.tran(self, Philo.hungry)
 
-        elif sig == pq.Signal.EAT or sig == pq.Signal.DONE:
+        elif sig == farc.Signal.EAT or sig == farc.Signal.DONE:
             assert event.value != PHILO_ID(self)
             status = self.handled(self, event)
 
@@ -123,20 +128,21 @@ class Philo(pq.Ahsm):
             status = self.super(self, self.top)
         return status
 
+    @farc.Hsm.state
     def hungry(self, event):
         sig = event.signal
-        if sig == pq.Signal.ENTRY:
-            e = pq.Event(pq.Signal.HUNGRY, PHILO_ID(self))
-            pq.Framework.post(e, "Table")
+        if sig == farc.Signal.ENTRY:
+            e = farc.Event(farc.Signal.HUNGRY, PHILO_ID(self))
+            farc.Framework.post(e, "Table")
             status = self.handled(self, event)
 
-        elif sig == pq.Signal.EAT:
+        elif sig == farc.Signal.EAT:
             if event.value == PHILO_ID(self):
                 status = self.tran(self,Philo.eating)
             else:
                 status = self.super(self, self.top) # UNHANDLED
 
-        elif sig == pq.Signal.DONE:
+        elif sig == farc.Signal.DONE:
             assert event.value != PHILO_ID(self)
             status = self.handled(self, event)
 
@@ -144,21 +150,22 @@ class Philo(pq.Ahsm):
             status = self.super(self, self.top)
         return status
 
+    @farc.Hsm.state
     def eating(self, event):
         sig = event.signal
-        if sig == pq.Signal.ENTRY:
+        if sig == farc.Signal.ENTRY:
             self.timeEvt.postIn(self, EAT_TIME())
             status = self.handled(self, event)
 
-        elif sig == pq.Signal.EXIT:
-            e = pq.Event(pq.Signal.DONE, PHILO_ID(self))
-            pq.Framework.publish(e)
+        elif sig == farc.Signal.EXIT:
+            e = farc.Event(farc.Signal.DONE, PHILO_ID(self))
+            farc.Framework.publish(e)
             status = self.handled(self, event)
 
-        elif sig == pq.Signal.TIMEOUT:
+        elif sig == farc.Signal.TIMEOUT:
             status = self.tran(self,Philo.thinking)
 
-        elif sig == pq.Signal.EAT or sig == pq.Signal.DONE:
+        elif sig == farc.Signal.EAT or sig == farc.Signal.DONE:
             assert event.value != PHILO_ID(self)
             status = self.handled(self, event)
 

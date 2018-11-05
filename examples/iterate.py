@@ -3,32 +3,32 @@
 
 import asyncio
 
-import pq
+import farc
 
 
-class Iterate(pq.Ahsm):
+class Iterate(farc.Ahsm):
     def __init__(self, count=3):
         super().__init__(Iterate.initial)
-        pq.Signal.register("ITERATE")
+        farc.Signal.register("ITERATE")
         self.count = count
 
 
-    @pq.Hsm.state
+    @farc.Hsm.state
     def initial(me, event):
         print("initial")
-        me.iter_evt = pq.Event(pq.Signal.ITERATE, None)
+        me.iter_evt = farc.Event(farc.Signal.ITERATE, None)
         return me.tran(me, Iterate.iterating)
 
 
-    @pq.Hsm.state
+    @farc.Hsm.state
     def iterating(me, event):
         sig = event.signal
-        if sig == pq.Signal.ENTRY:
+        if sig == farc.Signal.ENTRY:
             print("iterating")
             me.postFIFO(me.iter_evt)
             return me.handled(me, event)
 
-        elif sig == pq.Signal.ITERATE:
+        elif sig == farc.Signal.ITERATE:
             print(me.count)
 
             if me.count == 0:
@@ -42,12 +42,12 @@ class Iterate(pq.Ahsm):
         return me.super(me, me.top)
 
 
-    @pq.Hsm.state
+    @farc.Hsm.state
     def done(me, event):
         sig = event.signal
-        if sig == pq.Signal.ENTRY:
+        if sig == farc.Signal.ENTRY:
             print("done")
-            pq.Framework.stop()
+            farc.Framework.stop()
             return me.handled(me, event)
 
         return me.super(me, me.top)

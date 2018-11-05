@@ -3,34 +3,34 @@
 
 import asyncio
 
-import pq
+import farc
 
 
-class Mississippi(pq.Ahsm):
+class Mississippi(farc.Ahsm):
 
-    @pq.Hsm.state
+    @farc.Hsm.state
     def initial(me, event):
         print("initial")
-        me.teCount = pq.TimeEvent("COUNT")
-        me.tePrint = pq.TimeEvent("PRINT")
+        me.teCount = farc.TimeEvent("COUNT")
+        me.tePrint = farc.TimeEvent("PRINT")
         return me.tran(me, Mississippi.counting)
 
 
-    @pq.Hsm.state
+    @farc.Hsm.state
     def counting(me, event):
         sig = event.signal
-        if sig == pq.Signal.ENTRY:
+        if sig == farc.Signal.ENTRY:
             print("counting enter")
             me._count = 0
             me.teCount.postEvery(me, 0.001)
             me.tePrint.postEvery(me, 1.000)
             return me.handled(me, event)
 
-        elif sig == pq.Signal.COUNT:
+        elif sig == farc.Signal.COUNT:
             me._count += 1
             return me.handled(me, event)
 
-        elif sig == pq.Signal.PRINT:
+        elif sig == farc.Signal.PRINT:
             print(me._count, "millis")
             return me.handled(me, event)
 

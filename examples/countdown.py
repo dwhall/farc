@@ -3,31 +3,31 @@
 
 import asyncio
 
-import pq
+import farc
 
 
-class Countdown(pq.Ahsm):
+class Countdown(farc.Ahsm):
     def __init__(self, count=3):
         super().__init__(Countdown.initial)
         self.count = count
 
 
-    @pq.Hsm.state
+    @farc.Hsm.state
     def initial(me, event):
         print("initial")
-        me.te = pq.TimeEvent("TIME_TICK")
+        me.te = farc.TimeEvent("TIME_TICK")
         return me.tran(me, Countdown.counting)
 
 
-    @pq.Hsm.state
+    @farc.Hsm.state
     def counting(me, event):
         sig = event.signal
-        if sig == pq.Signal.ENTRY:
+        if sig == farc.Signal.ENTRY:
             print("counting")
             me.te.postIn(me, 1.0)
             return me.handled(me, event)
 
-        elif sig == pq.Signal.TIME_TICK:
+        elif sig == farc.Signal.TIME_TICK:
             print(me.count)
 
             if me.count == 0:
@@ -40,12 +40,12 @@ class Countdown(pq.Ahsm):
         return me.super(me, me.top)
 
 
-    @pq.Hsm.state
+    @farc.Hsm.state
     def done(me, event):
         sig = event.signal
-        if sig == pq.Signal.ENTRY:
+        if sig == farc.Signal.ENTRY:
             print("done")
-            pq.Framework.stop()
+            farc.Framework.stop()
             return me.handled(me, event)
 
         return me.super(me, me.top)

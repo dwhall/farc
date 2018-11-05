@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
-"""UDP Relay AHSM for pq
-Relays UDP messages to/from the pq framework.
+"""UDP Relay AHSM for farc
+Relays UDP messages to/from the farc framework.
 
 References:
 - https://www.pythonsheets.com/notes/python-asyncio.html
@@ -10,7 +10,7 @@ References:
 
 import asyncio
 
-import pq
+import farc
 
 
 UDP_PORT = 4242
@@ -27,13 +27,13 @@ class UdpServer:
         UdpRelayAhsm.on_error(error)
 
 
-class UdpRelayAhsm(pq.Ahsm):
+class UdpRelayAhsm(farc.Ahsm):
 
-    @pq.Hsm.state
+    @farc.Hsm.state
     def initial(me, event):
-        pq.Framework.subscribe("NET_ERR", me)
-        pq.Framework.subscribe("NET_RXD", me)
-        me.tmr = pq.TimeEvent("FIVE_COUNT")
+        farc.Framework.subscribe("NET_ERR", me)
+        farc.Framework.subscribe("NET_RXD", me)
+        me.tmr = farc.TimeEvent("FIVE_COUNT")
 
         loop = asyncio.get_event_loop()
         server = loop.create_datagram_endpoint(UdpServer, local_addr=("localhost", UDP_PORT))
@@ -41,49 +41,49 @@ class UdpRelayAhsm(pq.Ahsm):
         return me.tran(me, UdpRelayAhsm.waiting)
 
 
-    @pq.Hsm.state
+    @farc.Hsm.state
     def waiting(me, event):
         sig = event.signal
-        if sig == pq.Signal.ENTRY:
+        if sig == farc.Signal.ENTRY:
             print("Awaiting a UDP datagram on port 4242.  Try: $ nc -u localhost 4242")
             return me.handled(me, event)
 
-        elif sig == pq.Signal.NET_RXD:
+        elif sig == farc.Signal.NET_RXD:
             me.latest_msg, me.latest_addr = event.value
             print("RelayFrom(%s): %r" % (me.latest_addr, me.latest_msg.decode()))
             return me.tran(me, UdpRelayAhsm.relaying)
 
-        elif sig == pq.Signal.SIGTERM:
+        elif sig == farc.Signal.SIGTERM:
             return me.tran(me, UdpRelayAhsm.exiting)
 
         return me.super(me, me.top)
 
 
-    @pq.Hsm.state
+    @farc.Hsm.state
     def relaying(me, event):
         sig = event.signal
-        if sig == pq.Signal.ENTRY:
+        if sig == farc.Signal.ENTRY:
             me.tmr.postEvery(me, 5.000)
             return me.handled(me, event)
 
-        elif sig == pq.Signal.NET_RXD:
+        elif sig == farc.Signal.NET_RXD:
             me.latest_msg, me.latest_addr = event.value
             print("RelayFrom(%s): %r" % (me.latest_addr, me.latest_msg.decode()))
             return me.handled(me, event)
 
-        elif sig == pq.Signal.FIVE_COUNT:
+        elif sig == farc.Signal.FIVE_COUNT:
             s = "Latest: %r\n" % me.latest_msg.decode()
             me.transport.sendto(s.encode(), me.latest_addr)
             return me.handled(me, event)
 
-        elif sig == pq.Signal.NET_ERR:
+        elif sig == farc.Signal.NET_ERR:
             return me.tran(me, UdpRelayAhsm.waiting)
 
-        elif sig == pq.Signal.SIGTERM:
+        elif sig == farc.Signal.SIGTERM:
             me.tmr.disarm()
             return me.tran(me, UdpRelayAhsm.exiting)
 
-        elif sig == pq.Signal.EXIT:
+        elif sig == farc.Signal.EXIT:
             print("Leaving timer event running so Ctrl+C will be handled on Windows")
             return me.handled(me, event)
 
@@ -92,7 +92,7 @@ class UdpRelayAhsm(pq.Ahsm):
 
     def exiting(me, event):
         sig = event.signal
-        if sig == pq.Signal.ENTRY:
+        if sig == farc.Signal.ENTRY:
             print("exiting")
             me.transport.close()
             return me.handled(me, event)
@@ -102,13 +102,13 @@ class UdpRelayAhsm(pq.Ahsm):
     # Callbacks interact via messaging
     @staticmethod
     def on_datagram(data, addr):
-        e = pq.Event(pq.Signal.NET_RXD, (data,addr))
-        pq.Framework.publish(e)
+        e = farc.Event(farc.Signal.NET_RXD, (data,addr))
+        farc.Framework.publish(e)
 
     @staticmethod
     def on_error(error):
-        e = pq.Event(pq.Signal.NET_ERR, (error))
-        pq.Framework.publish(e)
+        e = farc.Event(farc.Signal.NET_ERR, (error))
+        farc.Framework.publish(e)
 
 
 if __name__ == "__main__":
@@ -119,5 +119,5 @@ if __name__ == "__main__":
     try:
         loop.run_forever()
     except KeyboardInterrupt:
-        pq.Framework.stop()
+        farc.Framework.stop()
     loop.close()

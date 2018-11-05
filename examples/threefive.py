@@ -4,32 +4,32 @@
 import asyncio
 from time import sleep
 
-import pq
+import farc
 
 
-class Three(pq.Ahsm):
+class Three(farc.Ahsm):
 
-    @pq.Hsm.state
+    @farc.Hsm.state
     def initial(me, event):
         print("Three initial")
-        me.te = pq.TimeEvent("TICK3")
+        me.te = farc.TimeEvent("TICK3")
         return me.tran(me, Three.running)
 
 
-    @pq.Hsm.state
+    @farc.Hsm.state
     def running(me, event):
         sig = event.signal
-        if sig == pq.Signal.ENTRY:
+        if sig == farc.Signal.ENTRY:
             print("three enter")
             me.te.postEvery(me, 3)
             return me.handled(me, event)
 
-        elif sig == pq.Signal.TICK3:
+        elif sig == farc.Signal.TICK3:
             print("three tick")
             sleep(0.10)
             return me.handled(me, event)
 
-        elif sig == pq.Signal.EXIT:
+        elif sig == farc.Signal.EXIT:
             print("three exit")
             me.te.disarm()
             return me.handled(me, event)
@@ -37,29 +37,29 @@ class Three(pq.Ahsm):
         return me.super(me, me.top)
 
 
-class Five(pq.Ahsm):
+class Five(farc.Ahsm):
 
-    @pq.Hsm.state
+    @farc.Hsm.state
     def initial(me, event):
         print("Five initial")
-        me.te = pq.TimeEvent("TICK5")
+        me.te = farc.TimeEvent("TICK5")
         return me.tran(me, Five.running)
 
 
-    @pq.Hsm.state
+    @farc.Hsm.state
     def running(me, event):
         sig = event.signal
-        if sig == pq.Signal.ENTRY:
+        if sig == farc.Signal.ENTRY:
             print("five enter")
             me.te.postEvery(me, 5)
             return me.handled(me, event)
 
-        elif sig == pq.Signal.TICK5:
+        elif sig == farc.Signal.TICK5:
             print("five tick")
             sleep(0.20)
             return me.handled(me, event)
 
-        elif sig == pq.Signal.EXIT:
+        elif sig == farc.Signal.EXIT:
             print("five exit")
             me.te.disarm()
             return me.handled(me, event)
@@ -68,7 +68,7 @@ class Five(pq.Ahsm):
 
 
 if __name__ == "__main__":
-    pq.Spy.enable_spy(pq.VcdSpy)
+    farc.Spy.enable_spy(farc.VcdSpy)
 
     three = Three(Three.initial)
     five = Five(Five.initial)
@@ -80,5 +80,5 @@ if __name__ == "__main__":
     try:
         loop.run_forever()
     except KeyboardInterrupt:
-        pq.Framework.stop()
+        farc.Framework.stop()
     loop.close()

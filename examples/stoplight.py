@@ -3,51 +3,51 @@
 
 import asyncio
 
-import pq
+import farc
 
 
-class Stoplight(pq.Ahsm):
+class Stoplight(farc.Ahsm):
 
-    @pq.Hsm.state
+    @farc.Hsm.state
     def initial(me, event):
         print("Stoplight initial")
 
-        te = pq.TimeEvent("TIME_TICK")
+        te = farc.TimeEvent("TIME_TICK")
         te.postEvery(me, 2.0)
 
         return me.tran(me, Stoplight.red)
 
 
-    @pq.Hsm.state
+    @farc.Hsm.state
     def red(me, event):
         sig = event.signal
-        if sig == pq.Signal.ENTRY:
+        if sig == farc.Signal.ENTRY:
             print("red enter")
             return me.handled(me, event)
 
-        elif sig == pq.Signal.TIME_TICK:
+        elif sig == farc.Signal.TIME_TICK:
             print("red next")
             return me.tran(me, Stoplight.green)
 
-        elif sig == pq.Signal.EXIT:
+        elif sig == farc.Signal.EXIT:
             print("red exit")
             return me.handled(me, event)
 
         return me.super(me, me.top)
 
 
-    @pq.Hsm.state
+    @farc.Hsm.state
     def green(me, event):
         sig = event.signal
-        if sig == pq.Signal.ENTRY:
+        if sig == farc.Signal.ENTRY:
             print("green enter")
             return me.handled(me, event)
 
-        elif sig == pq.Signal.TIME_TICK:
+        elif sig == farc.Signal.TIME_TICK:
             print("green next")
             return me.tran(me, Stoplight.red)
 
-        elif sig == pq.Signal.EXIT:
+        elif sig == farc.Signal.EXIT:
             print("green exit")
             return me.handled(me, event)
 
