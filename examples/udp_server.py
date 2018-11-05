@@ -98,6 +98,7 @@ class UdpRelayAhsm(farc.Ahsm):
         return me.super(me, me.top)
 
 
+    @farc.Hsm.state
     def exiting(me, event):
         sig = event.signal
         if sig == farc.Signal.ENTRY:
