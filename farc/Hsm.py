@@ -29,6 +29,13 @@ class Hsm(object):
 
 
     def __init__(self, initialState):
+        """Sets this Hsm's current state to Hsm.top(), the default state
+        and stores the given initial state.
+        """
+        # self.state is the Hsm/act's current active state.
+        # This instance variable references the message handler (method)
+        # that will be called whenever a message is sent to this Hsm.
+        # We initialize this to self.top, the default message handler
         self.state = self.top
         self.initialState = initialState
 
@@ -57,10 +64,19 @@ class Hsm(object):
     def tran(me, nextState): me.state = nextState; return Hsm.RET_TRAN
     @staticmethod
     def super(me, superState): me.state = superState; return Hsm.RET_SUPER # p. 158
+
+    # BEHOLD! The top/default state for all state machines
     @state
     def top(me, event):
-        # Handle the Posix-like events to force the HSM
-        # to execute its Exit path all the way to the top
+        """This is the default state handler.
+        This handler ignores all signals except
+        the POSIX-like events, SIGINT/SIGTERM.
+        Handling SIGINT/SIGTERM here causes the Exit path
+        to be executed from the application's active state
+        to top/here.
+        The application may put something useful
+        or nothing at all in the Exit path.
+        """
         if Event.SIGINT == event:
             return Hsm.RET_HANDLED
         if Event.SIGTERM == event:
@@ -117,7 +133,9 @@ class Hsm(object):
 
     @staticmethod
     def dispatch(me, event):
-        """Follow the transitions until the event is handled or Top is reached
+        """Dispatches the given event to this Hsm.
+        Follows the application's state transitions
+        until the event is handled or top() is reached
         p. 174
         """
         Spy.on_hsm_dispatch_event(event)

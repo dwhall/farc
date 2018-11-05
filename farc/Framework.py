@@ -24,9 +24,10 @@ class Framework(object):
     # The Framework maintains a registry of Ahsms in a list.
     _ahsm_registry = []
 
-    # The Framework maintains a dict of priorities so that no two
-    # Ahsms may have the same priority.
-    # Then Ahsm's priority is checked in the Ahsm's start method
+    # The Framework maintains a dict of priorities in use
+    # to prevent duplicates.
+    # An Ahsm's priority is checked against this dict
+    # within the Ahsm.start() method
     # when the Ahsm is added to the Framework.
     # The dict's key is the priority (integer) and the value is the Ahsm.
     _priority_dict = {}
