@@ -134,8 +134,7 @@ class Hsm(object):
             Spy.on_hsm_dispatch_pre(s)
             r = s(me, event)    # invoke state handler
 
-        #map(Spy.on_hsm_dispatch_post, exit_path) # FAILS!?
-        for st in exit_path: Spy.on_hsm_dispatch_post(st)
+        Spy.on_hsm_dispatch_post(exit_path)
 
         # If the state handler indicates a transition
         if r == Hsm.RET_TRAN:

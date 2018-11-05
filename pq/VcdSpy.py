@@ -88,12 +88,13 @@ class VcdSpy(object):
 
 
     @staticmethod
-    def on_hsm_dispatch_post(st):
-        """Writes changes to the VCD file for post-dispatch
-        of an event to the given State
+    def on_hsm_dispatch_post(st_list):
+        """Writes changes to the VCD file for post-dispatch.
+        Argument is a list of state handlers
         """
         ts = VcdSpy._get_timestamp()
-        VcdSpy._vcd_writer.change(VcdSpy._vcd_var_state[st.__hash__()], ts, 0)
+        for st in st_list:
+            VcdSpy._vcd_writer.change(VcdSpy._vcd_var_state[st.__hash__()], ts, 0)
 
 
     @staticmethod
