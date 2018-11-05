@@ -267,11 +267,3 @@ class Framework(object):
         _event_loop.add_signal_handler(29, print_info.__func__)
     except NotImplementedError:
         pass
-
-    @staticmethod
-    def enable_spy(spy_cls):
-        """Sets the Spy to use the given class
-        and initializes the Spy system.
-        """
-        globals()["Spy"] = spy_cls
-        Spy.init()
