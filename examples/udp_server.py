@@ -1,7 +1,15 @@
 #!/usr/bin/env python3
 
 """UDP Relay AHSM for farc
-Relays UDP messages to/from the farc framework.
+This is a demonstration program that
+relays UDP messages to/from the farc framework.
+
+This file represents the "server" which listens for a connection.
+A client such as netcat (nc) can be used to issue UDP datagrams
+to the server.
+When a client is present, the server starts a timer
+to periodically echo back the most recently received message.
+When the client is gone, the server awaits the next datagram.
 
 References:
 - https://www.pythonsheets.com/notes/python-asyncio.html
@@ -45,7 +53,7 @@ class UdpRelayAhsm(farc.Ahsm):
     def waiting(me, event):
         sig = event.signal
         if sig == farc.Signal.ENTRY:
-            print("Awaiting a UDP datagram on port 4242.  Try: $ nc -u localhost 4242")
+            print("Awaiting a UDP datagram on port {0}.  Try: $ nc -u localhost {0}".format(UDP_PORT))
             return me.handled(me, event)
 
         elif sig == farc.Signal.NET_RXD:
