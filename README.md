@@ -15,5 +15,15 @@ are decomposed into managable chunks of code.
 Known Issue: On windows, Ctrl+C is supressed by asyncio event loop's run_forever() ([bug report](https://bugs.python.org/issue23057)).
 The workaround is to inject an event to awake the event loop.
 
-History:  This project used to be called "farc" but that name was taken in PyPI,
-so I settled on farc.  If you see "farc" in the code anywhere, it means farc.
+Note:  This project used to be called "pq" but that name was taken in PyPI,
+so I renamed to farc (ugh).  If you see "pq" in the code anywhere, it means farc.
+
+
+## Code Repository
+
+https://github.com/dwhall/farc
+
+
+## Release History
+
+2018/10/09  0.1.0   Initial release
