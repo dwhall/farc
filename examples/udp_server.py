@@ -45,6 +45,7 @@ class UdpRelayAhsm(pq.Ahsm):
     def waiting(me, event):
         sig = event.signal
         if sig == pq.Signal.ENTRY:
+            print("Awaiting a UDP datagram on port 4242.  Try: $ nc -u localhost 4242")
             return me.handled(me, event)
 
         elif sig == pq.Signal.NET_RXD:
@@ -71,7 +72,8 @@ class UdpRelayAhsm(pq.Ahsm):
             return me.handled(me, event)
 
         elif sig == pq.Signal.FIVE_COUNT:
-            me.transport.sendto(b"Latest: %r\n" % me.latest_msg, me.latest_addr)
+            s = "Latest: %r\n" % me.latest_msg.decode()
+            me.transport.sendto(s.encode(), me.latest_addr)
             return me.handled(me, event)
 
         elif sig == pq.Signal.NET_ERR:
@@ -80,6 +82,10 @@ class UdpRelayAhsm(pq.Ahsm):
         elif sig == pq.Signal.SIGTERM:
             me.tmr.disarm()
             return me.tran(me, UdpRelayAhsm.exiting)
+
+        elif sig == pq.Signal.EXIT:
+            print("Leaving timer event running so Ctrl+C will be handled on Windows")
+            return me.handled(me, event)
 
         return me.super(me, me.top)
 
