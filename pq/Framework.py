@@ -251,28 +251,20 @@ class Framework(object):
 
 
     @staticmethod
-    def handle_posix_signal(sig):
-        """Translates a POSIX signal to a pq event
-        and dispatches the even to the Framework, usually in a special way.
-
-        POSIX.SIGINT induces the Framework to issue an event that causes
-        all SMs to execute their exit handlers all the way to the top of the hierarchy.
-
-        NOTE: POSIX  signals come from the "signal" module
-              and pq Signals come from the "Signal" module.
+    def print_info():
+        """Prints the name and current state
+        of each actor in the framework.
+        Meant to be called when ctrl+T (SIGINFO/29) is issued.
         """
-        if sig == signal.SIGINT:
-            # TODO:  replace stop() with code to re-init all Ahsms
-            Framework.stop()
-
-        elif sig == signal.SIGTERM:
-            Framework.stop()
+        for act in Framework._ahsm_registry:
+            print(act.__class__.__name__, act.state.__name__)
 
 
     # Bind a useful set of POSIX signals to the handler (dismiss a NotImplementedError on Windows)
     try:
-        _event_loop.add_signal_handler(signal.SIGINT, handle_posix_signal.__func__, signal.SIGINT)
-        _event_loop.add_signal_handler(signal.SIGTERM, handle_posix_signal.__func__, signal.SIGTERM)
+        _event_loop.add_signal_handler(signal.SIGINT, lambda: Framework.stop())
+        _event_loop.add_signal_handler(signal.SIGTERM, lambda: Framework.stop())
+        _event_loop.add_signal_handler(29, print_info.__func__)
     except NotImplementedError:
         pass
 
