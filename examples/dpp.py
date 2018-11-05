@@ -176,7 +176,7 @@ def main():
     philo = []
     for n in range(N_PHILO):
         p = Philo(Philo.initial)
-        p.start(0)
+        p.start(n+1)
         philo.append(p)
 
     loop = asyncio.get_event_loop()
