@@ -13,9 +13,10 @@ class Ahsm(Hsm):
     """
 
     def start(self, priority, initEvent=None):
-        # add the priority first so that Framework.add()
-        # can ensure the priority is unique
+        # must set the priority before Framework.add() which uses the priority
         self.priority = priority
+        # must create a name before Framework.add() which uses the name
+        self.name = "%s_%d" % (self.__class__.__name__, priority)
         Framework.add(self)
         self.mq = []
         self.init(self, initEvent)

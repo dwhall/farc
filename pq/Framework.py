@@ -47,6 +47,16 @@ class Framework(object):
     # An Ahsm may subscribe to a signal at any time during runtime.
     _subscriber_table = {}
 
+    # VcdSpy is the internal visual debugging/logging system used by pq.
+    # VcdSpy, if enabled, generates a Value Change Dump (vcd) file to be viewed
+    # after execution completes.  The vcd viewer application allows
+    # you to see a timeline of [A]Hsms, states, events and debug IDs
+    # which will help you make sense of what happened at run time.
+    # The programmer should set the following variable to True
+    # before any Ahsm is initialized (usually in the main function)
+    vcd_spy = False
+    _vcd_spy_initd = False
+
 
     @staticmethod
     def post(event, act):
@@ -205,6 +215,29 @@ class Framework(object):
         assert act.priority not in Framework._priority_dict, "Priority MUST be unique"
         Framework._priority_dict[act.priority] = act
 
+        # VcdSpy: Register the Ahsm with the VCD writer
+        if Framework.vcd_spy:
+            if not Framework._vcd_spy_initd:
+                Framework._init_vcd_spy()
+            Framework._vcd_spy_ahsms[act.name] = (
+                Framework._vcd_spy_writer.register_var("tsk", act.name, "wire", size=1),
+                Framework._vcd_spy_writer.register_var("tsk", act.name + "_st", "integer")
+            )
+
+
+    @staticmethod
+    def _init_vcd_spy():
+        # NOTE: Import vcd here so that pyvcd is an optional package
+        global vcd
+        import vcd # pip3 install pyvcd
+        import datetime
+        import tempfile
+        timestamp = datetime.datetime.isoformat(datetime.datetime.now())
+        Framework._vcd_spy_file = tempfile.NamedTemporaryFile(mode='w', delete=False)
+        Framework._vcd_spy_writer = vcd.VCDWriter(Framework._vcd_spy_file, timescale='1 us', date=timestamp)
+        Framework._vcd_spy_ahsms = {}
+        Framework._vcd_spy_initd = True
+
 
     @staticmethod
     def run():
@@ -243,6 +276,12 @@ class Framework(object):
         # Run to completion so each Ahsm will process SIGTERM
         Framework.run()
         Framework._event_loop.stop()
+
+        if Framework.vcd_spy:
+            fn = Framework._vcd_spy_file.name
+            Framework._vcd_spy_writer.close()
+            Framework._vcd_spy_file.close()
+            print("VcdSpy file: %s" % fn)
 
 
     @staticmethod

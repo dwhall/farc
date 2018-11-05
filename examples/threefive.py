@@ -65,6 +65,8 @@ class Five(pq.Ahsm):
 
 
 if __name__ == "__main__":
+    pq.Framework.vcd_spy = True
+
     three = Three(Three.initial)
     three.start(3)
 
@@ -72,5 +74,8 @@ if __name__ == "__main__":
     five.start(5)
 
     loop = asyncio.get_event_loop()
-    loop.run_forever()
+    try:
+        loop.run_forever()
+    except KeyboardInterrupt:
+        pq.Framework.stop()
     loop.close()
