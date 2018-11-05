@@ -14,9 +14,12 @@ from .Hsm import Hsm
 
 
 class Framework(object):
-    """Framework is a composite class that holds the asyncio event loop,
-    the registry of AHSMs, the set of TimeEvents (and the handle to the next one)
-    and the table subscriptions to events.
+    """Framework is a composite class that holds:
+    - the asyncio event loop
+    - the registry of AHSMs
+    - the set of TimeEvents
+    - the handle to the next TimeEvent
+    - the table subscriptions to events
     """
 
     _event_loop = asyncio.get_event_loop()
@@ -32,12 +35,13 @@ class Framework(object):
     # The dict's key is the priority (integer) and the value is the Ahsm.
     _priority_dict = {}
 
-    # The Framework maintains a group of TimeEvents in a dict.
-    # The next expiration of the TimeEvent is the key and the event is the value.
-    # Only the event with the next expiration time is scheduled for the timeEventCallback().
-    # As TimeEvents are added and removed, the scheduled callback must be re-evaluated.
-    # Periodic TimeEvents should only have one entry in the dict: the next expiration.
-    # The timeEventCallback() will add a Periodic TimeEvent back into the dict with its next expiration.
+    # The Framework maintains a group of TimeEvents in a dict.  The next
+    # expiration of the TimeEvent is the key and the event is the value.
+    # Only the event with the next expiration time is scheduled for the
+    # timeEventCallback().  As TimeEvents are added and removed, the scheduled
+    # callback must be re-evaluated.  Periodic TimeEvents should only have
+    # one entry in the dict: the next expiration.  The timeEventCallback() will
+    # add a Periodic TimeEvent back into the dict with its next expiration.
     _time_events = {}
 
     # When a TimeEvent is scheduled for the timeEventCallback(),
@@ -45,24 +49,27 @@ class Framework(object):
     _tm_event_handle = None
 
     # The Subscriber Table is a dictionary.  The keys are signals.
-    # The value for each key is a list of Ahsms that are subscribed to the signal.
-    # An Ahsm may subscribe to a signal at any time during runtime.
+    # The value for each key is a list of Ahsms that are subscribed to the
+    # signal.  An Ahsm may subscribe to a signal at any time during runtime.
     _subscriber_table = {}
 
 
     @staticmethod
     def post(event, act):
         """Posts the event to the given Ahsm's event queue.
-        The argument, act, is either a string of the name of the class to which
-        the event is sent or the Ahsm instance itself.
-        If the argument is a string, the event will post to all actors having the given classname
+        The argument, act, is either a string of the name of the class
+        to which the event is sent or the Ahsm instance itself.
+        If the argument is a string, the event will post to all actors
+        having the given classname.
         """
         if type(act) is str:
             # I'm not convinced this is appropriate for the long term.
             # post() should target one actor and publish() targets many.
-            # This was created to support legacy apps which use an actor's class name as the target.
+            # This was created to support legacy apps which use
+            # an actor's class name as the target.
             # If this goes away, apps will need to adapt.
-            [a.postFIFO(event) for a in Framework._ahsm_registry if a.__class__.__name__ == act]
+            [a.postFIFO(event) for a in Framework._ahsm_registry
+                    if a.__class__.__name__ == act]
         else:
             assert isinstance(act, Hsm)
             act.postFIFO(event)
@@ -95,8 +102,9 @@ class Framework(object):
 
     @staticmethod
     def addTimeEvent(tm_event, delta):
-        """Adds the TimeEvent to the list of active time events in the Framework.
-        The event will fire its signal (to the TimeEvent's target Ahsm) after the delay, delta.
+        """Adds the TimeEvent to the list of time events in the Framework.
+        The event will fire its signal (to the TimeEvent's target Ahsm)
+        after the delay, delta.
         """
         expiration = Framework._event_loop.time() + delta
         Framework.addTimeEventAt(tm_event, expiration)
@@ -104,7 +112,7 @@ class Framework(object):
 
     @staticmethod
     def addTimeEventAt(tm_event, abs_time):
-        """Adds the TimeEvent to the list of active time events in the Framework.
+        """Adds the TimeEvent to the list of time events in the Framework.
         The event will fire its signal (to the TimeEvent's target Ahsm)
         at the given absolute time (_event_loop.time()).
         """
@@ -114,10 +122,12 @@ class Framework(object):
 
     @staticmethod
     def _insortTimeEvent(tm_event, expiration):
-        """Inserts a TimeEvent into the list of active time events,
+        """Inserts a TimeEvent into the list of time events,
         sorted by the next expiration of the timer.
-        No two timers should expire at the same time (key collision in the Dict),
-        so we add the smallest amount of time to any duplicate expiration time.
+        If the expiration time matches an existing expiration,
+        we add the smallest amount of time to the given expiration
+        to avoid a key collision in the Dict
+        and make the identically-timed events fire in a FIFO fashion.
         """
         # If the event is to happen in the past, post it now
         now = Framework._event_loop.time()
@@ -134,13 +144,17 @@ class Framework(object):
 
         # If this is the only active TimeEvent, schedule its callback
         if len(Framework._time_events) == 1:
-            Framework._tm_event_handle = Framework._event_loop.call_at(expiration, Framework.timeEventCallback, tm_event, expiration)
+            Framework._tm_event_handle = Framework._event_loop.call_at(
+                expiration, Framework.timeEventCallback, tm_event, expiration)
 
-        # If there are other TimeEvents, check if this one should replace the scheduled one
+        # If there are other TimeEvents,
+        # check if this one should replace the scheduled one
         else:
             if expiration < min(Framework._time_events.keys()):
                 Framework._tm_event_handle.cancel()
-                Framework._tm_event_handle = Framework._event_loop.call_at(expiration, Framework.timeEventCallback, tm_event, expiration)
+                Framework._tm_event_handle = Framework._event_loop.call_at(
+                    expiration, Framework.timeEventCallback, tm_event,
+                    expiration)
 
 
     @staticmethod
@@ -161,7 +175,10 @@ class Framework(object):
                     if len(Framework._time_events) > 0:
                         next_expiration = min(Framework._time_events.keys())
                         next_event = Framework._time_events[next_expiration]
-                        Framework._tm_event_handle = Framework._event_loop.call_at(next_expiration, Framework.timeEventCallback, next_event, next_expiration)
+                        Framework._tm_event_handle = \
+                            Framework._event_loop.call_at(
+                                next_expiration, Framework.timeEventCallback,
+                                next_event, next_expiration)
                     else:
                         Framework._tm_event_handle = None
                 else:
@@ -176,7 +193,9 @@ class Framework(object):
         If the TimeEvent is periodic, re-insort the event
         in the list of active time events.
         """
-        assert expiration in Framework._time_events.keys(), "Exp:%d _time_events.keys():%s" % ( expiration, Framework._time_events.keys() )
+        assert expiration in Framework._time_events.keys(), (
+            "Exp:%d _time_events.keys():%s" %
+            (expiration, Framework._time_events.keys()))
 
         # Remove this expired TimeEvent from the active list
         del Framework._time_events[expiration]
@@ -187,13 +206,17 @@ class Framework(object):
 
         # If this is a periodic time event, schedule its next expiration
         if tm_event.interval > 0:
-            Framework._insortTimeEvent(tm_event, expiration + tm_event.interval)
+            Framework._insortTimeEvent(tm_event,
+                expiration + tm_event.interval)
 
         # If not set already and there are more events, set the next event callback
-        if Framework._tm_event_handle == None and len(Framework._time_events) > 0:
+        if (Framework._tm_event_handle == None and
+                len(Framework._time_events) > 0):
             next_expiration = min(Framework._time_events.keys())
             next_event = Framework._time_events[next_expiration]
-            Framework._tm_event_handle = Framework._event_loop.call_at(next_expiration, Framework.timeEventCallback, next_event, next_expiration)
+            Framework._tm_event_handle = Framework._event_loop.call_at(
+                next_expiration, Framework.timeEventCallback, next_event,
+                next_expiration)
 
         # Run to completion
         Framework._event_loop.call_soon_threadsafe(Framework.run)
@@ -204,7 +227,8 @@ class Framework(object):
         """Makes the framework aware of the given Ahsm.
         """
         Framework._ahsm_registry.append(act)
-        assert act.priority not in Framework._priority_dict, "Priority MUST be unique"
+        assert act.priority not in Framework._priority_dict, (
+                "Priority MUST be unique")
         Framework._priority_dict[act.priority] = act
         Spy.on_framework_add(act)
 
@@ -259,7 +283,8 @@ class Framework(object):
             print(act.__class__.__name__, act.state.__name__)
 
 
-    # Bind a useful set of POSIX signals to the handler (dismiss a NotImplementedError on Windows)
+    # Bind a useful set of POSIX signals to the handler
+    # (ignore a NotImplementedError on Windows)
     try:
         _event_loop.add_signal_handler(signal.SIGINT, lambda: Framework.stop())
         _event_loop.add_signal_handler(signal.SIGTERM, lambda: Framework.stop())

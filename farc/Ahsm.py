@@ -9,8 +9,8 @@ from .Framework import Framework
 
 
 class Ahsm(Hsm):
-    """An Augmented Hierarchical State Machine (AHSM); a.k.a. ActiveObject (AO).
-    Adds a priority, message queue and methods to post to and pop from the queue.
+    """An Augmented Hierarchical State Machine (AHSM); a.k.a. ActiveObject/AO.
+    Adds a priority, message queue and methods to work with the queue.
     """
 
     def start(self, priority, initEvent=None):

@@ -41,15 +41,17 @@ class Hsm(object):
 
 
     def state(func):
-        """A decorator that helps outsiders identify which
-        methods are meant to be states.
+        """A decorator that identifies which methods are states.
         The presence of the farc_state attr, not its value,
         determines statehood.
+        The Spy debugging system uses the farc_state attribute
+        to determine which methods inside a class are actually states.
+        Other uses of the attribute may come in the future.
         """
         setattr(func, "farc_state", True)
         return staticmethod(func)
 
-    # Three helper functions to process reserved events through the current state
+    # Helper functions to process reserved events through the current state
     @staticmethod
     def trig(me, state, signal): return state(me, Event.reserved[signal])
     @staticmethod
@@ -62,8 +64,8 @@ class Hsm(object):
     def handled(me, event): return Hsm.RET_HANDLED
     @staticmethod
     def tran(me, nextState): me.state = nextState; return Hsm.RET_TRAN
-    @staticmethod
-    def super(me, superState): me.state = superState; return Hsm.RET_SUPER # p. 158
+    @staticmethod # p. 158
+    def super(me, superState): me.state = superState; return Hsm.RET_SUPER
 
     # BEHOLD! The top/default state for all state machines
     @state
@@ -189,7 +191,9 @@ class Hsm(object):
             # This is done in the reverse order of the path
             for st in entry_path[n::-1]:
                 r = Hsm.enter(me, st)
-                assert r == Hsm.RET_HANDLED, "Expected ENTRY to return HANDLED transitioning to {0}".format(t)
+                assert r == Hsm.RET_HANDLED, (
+                        "Expected ENTRY to return "
+                        "HANDLED transitioning to {0}".format(t))
 
             # Arrive at the target state
             me.state = t

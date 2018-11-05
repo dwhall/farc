@@ -31,8 +31,11 @@ class VcdSpy(object):
         global vcd
         import vcd # pip3 install pyvcd
         datestring = datetime.datetime.isoformat(datetime.datetime.now())
-        VcdSpy._vcd_file = tempfile.NamedTemporaryFile(mode='w', suffix=".vcd", delete=False)
-        VcdSpy._vcd_writer = vcd.VCDWriter(VcdSpy._vcd_file, timescale='1 us', date=datestring, init_timestamp=VcdSpy._get_timestamp())
+        VcdSpy._vcd_file = tempfile.NamedTemporaryFile(
+                mode='w', suffix=".vcd", delete=False)
+        VcdSpy._vcd_writer = vcd.VCDWriter(
+                VcdSpy._vcd_file, timescale='1 us', date=datestring,
+                init_timestamp=VcdSpy._get_timestamp())
         VcdSpy._vcd_var_state = {}
         VcdSpy._vcd_var_sig = {}
         # Handle signals that were registered before
@@ -54,10 +57,14 @@ class VcdSpy(object):
         used to trace the Ahsm's execution and state.
         """
         # for each state in the Actor's state machine
-        for nm, st in inspect.getmembers(act.__class__, predicate=inspect.isfunction):
+        for nm, st in inspect.getmembers(
+                act.__class__, predicate=inspect.isfunction):
             if hasattr(st, "farc_state"):
-                st_lbl = "St%d_%s_%s" % (act.priority, act.__class__.__name__, nm)
-                VcdSpy._vcd_var_state[st.__hash__()] = VcdSpy._vcd_writer.register_var("tsk", st_lbl, "wire", size=1, init=0)
+                st_lbl = "St%d_%s_%s" % (
+                    act.priority, act.__class__.__name__, nm)
+                act_var = VcdSpy._vcd_writer.register_var(
+                    "tsk", st_lbl, "wire", size=1, init=0)
+                VcdSpy._vcd_var_state[st.__hash__()] = act_var
 
 
     @staticmethod
@@ -84,7 +91,8 @@ class VcdSpy(object):
         of an event to the given State
         """
         ts = VcdSpy._get_timestamp()
-        VcdSpy._vcd_writer.change(VcdSpy._vcd_var_state[st.__hash__()], ts, 1)
+        act_var = VcdSpy._vcd_var_state[st.__hash__()]
+        VcdSpy._vcd_writer.change(act_var, ts, 1)
 
 
     @staticmethod
@@ -94,7 +102,8 @@ class VcdSpy(object):
         """
         ts = VcdSpy._get_timestamp()
         for st in st_list:
-            VcdSpy._vcd_writer.change(VcdSpy._vcd_var_state[st.__hash__()], ts, 0)
+            act_var = VcdSpy._vcd_var_state[st.__hash__()]
+            VcdSpy._vcd_writer.change(act_var, ts, 0)
 
 
     @staticmethod
@@ -102,4 +111,5 @@ class VcdSpy(object):
         """Registers a signal with the VcdWriter when that signal is registered with farc
         """
         sig_lbl = "Sig%d_%s" % (sigid, signame)
-        VcdSpy._vcd_var_sig[sigid] = VcdSpy._vcd_writer.register_var("tsk", sig_lbl, "event", size=1, init=0)
+        VcdSpy._vcd_var_sig[sigid] = VcdSpy._vcd_writer.register_var(
+            "tsk", sig_lbl, "event", size=1, init=0)
