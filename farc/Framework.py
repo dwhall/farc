@@ -219,8 +219,8 @@ class Framework(object):
             allQueuesEmpty = True
             sorted_acts = sorted(Framework._ahsm_registry, key=getPriority)
             for act in sorted_acts:
-                if len(act.mq) > 0:
-                    event_next = act.mq.pop()
+                if act.has_msgs():
+                    event_next = act.pop_msg()
                     act.dispatch(act, event_next)
                     allQueuesEmpty = False
                     break
