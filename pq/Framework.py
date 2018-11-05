@@ -221,9 +221,7 @@ class Framework(object):
             for act in sorted_acts:
                 if len(act.mq) > 0:
                     event_next = act.mq.pop()
-                    Spy.on_framework_run_pre_dispatch(act, event_next)
                     act.dispatch(act, event_next)
-                    Spy.on_framework_run_post_dispatch(act)
                     allQueuesEmpty = False
                     break
             if allQueuesEmpty:

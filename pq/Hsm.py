@@ -2,6 +2,7 @@
 Copyright 2017 Dean Hall.  See LICENSE file for details.
 """
 
+from .Spy import Spy
 from .Signal import Signal
 from .Event import Event
 
@@ -32,6 +33,15 @@ class Hsm(object):
         self.initialState = initialState
 
 
+    def state(func):
+        """A decorator that helps outsiders identify which
+        methods are meant to be states.
+        The presence of the pq_state attr, not its value,
+        determines statehood.
+        """
+        setattr(func, "pq_state", True)
+        return staticmethod(func)
+
     # Three helper functions to process reserved events through the current state
     @staticmethod
     def trig(me, state, signal): return state(me, Event.reserved[signal])
@@ -47,7 +57,7 @@ class Hsm(object):
     def tran(me, nextState): me.state = nextState; return Hsm.RET_TRAN
     @staticmethod
     def super(me, superState): me.state = superState; return Hsm.RET_SUPER # p. 158
-    @staticmethod
+    @state
     def top(me, event):
         # Handle the Posix-like events to force the HSM
         # to execute its Exit path all the way to the top
@@ -110,6 +120,7 @@ class Hsm(object):
         """Follow the transitions until the event is handled or Top is reached
         p. 174
         """
+        Spy.on_hsm_dispatch_event(event)
 
         # Save the current state
         t = me.state
@@ -120,7 +131,11 @@ class Hsm(object):
         while r == Hsm.RET_SUPER:
             s = me.state
             exit_path.append(s)
+            Spy.on_hsm_dispatch_pre(s)
             r = s(me, event)    # invoke state handler
+
+        #map(Spy.on_hsm_dispatch_post, exit_path) # FAILS!?
+        for st in exit_path: Spy.on_hsm_dispatch_post(st)
 
         # If the state handler indicates a transition
         if r == Hsm.RET_TRAN:
@@ -164,14 +179,3 @@ class Hsm(object):
 
         # Restore the current state
         me.state = t
-
-
-    @staticmethod
-    def state(func):
-        """A decorator that helps outsiders identify which
-        methods are meant to be states.
-        The presence of the pq_state attr, not its value,
-        determines statehood.
-        """
-        setattr(func, "pq_state", True)
-        return staticmethod(func)

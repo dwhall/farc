@@ -61,25 +61,6 @@ class VcdSpy(object):
 
 
     @staticmethod
-    def on_framework_run_pre_dispatch(act, evt):
-        """Writes changes to the VCD file for the given Event
-        that is sent to the given Ahsm.
-        """
-        ts = VcdSpy._get_timestamp()
-        VcdSpy._vcd_writer.change(VcdSpy._vcd_var_sig[evt.signal], ts, 1)
-        VcdSpy._vcd_writer.change(VcdSpy._vcd_var_state[act.state.__hash__()], ts, 1)
-
-
-    @staticmethod
-    def on_framework_run_post_dispatch(act):
-        """Writes changes to the VCD file for the given Event
-        that is sent to the given Ahsm.
-        """
-        ts = VcdSpy._get_timestamp()
-        VcdSpy._vcd_writer.change(VcdSpy._vcd_var_state[act.state.__hash__()], ts, 0)
-
-
-    @staticmethod
     def on_framework_stop():
         """Closes the VcdWriter file and prints the filename to stdout
         """
@@ -87,6 +68,32 @@ class VcdSpy(object):
         VcdSpy._vcd_writer.close()
         VcdSpy._vcd_file.close()
         print("VcdSpy file: %s" % fn)
+
+
+    @staticmethod
+    def on_hsm_dispatch_event(evt):
+        """Writes changes to the VCD file for the given Event
+        """
+        ts = VcdSpy._get_timestamp()
+        VcdSpy._vcd_writer.change(VcdSpy._vcd_var_sig[evt.signal], ts, 1)
+
+
+    @staticmethod
+    def on_hsm_dispatch_pre(st):
+        """Writes changes to the VCD file for pre-dispatch
+        of an event to the given State
+        """
+        ts = VcdSpy._get_timestamp()
+        VcdSpy._vcd_writer.change(VcdSpy._vcd_var_state[st.__hash__()], ts, 1)
+
+
+    @staticmethod
+    def on_hsm_dispatch_post(st):
+        """Writes changes to the VCD file for post-dispatch
+        of an event to the given State
+        """
+        ts = VcdSpy._get_timestamp()
+        VcdSpy._vcd_writer.change(VcdSpy._vcd_var_state[st.__hash__()], ts, 0)
 
 
     @staticmethod
