@@ -64,10 +64,9 @@ class Hsm(object):
     def handled(me, event): return Hsm.RET_HANDLED
     @staticmethod
     def tran(me, nextState): me.state = nextState; return Hsm.RET_TRAN
-    @staticmethod # p. 158
-    def super(me, superState): me.state = superState; return Hsm.RET_SUPER
+    @staticmethod
+    def super(me, superState): me.state = superState; return Hsm.RET_SUPER # p. 158
 
-    # BEHOLD! The top/default state for all state machines
     @state
     def top(me, event):
         """This is the default state handler.
@@ -79,6 +78,8 @@ class Hsm(object):
         The application may put something useful
         or nothing at all in the Exit path.
         """
+        # Handle the Posix-like events to force the HSM
+        # to execute its Exit path all the way to the top
         if Event.SIGINT == event:
             return Hsm.RET_HANDLED
         if Event.SIGTERM == event:
