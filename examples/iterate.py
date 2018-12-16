@@ -7,10 +7,9 @@ import farc
 
 
 class Iterate(farc.Ahsm):
-    def __init__(self, count=3):
+    def __init__(self,):
         super().__init__(Iterate.initial)
         farc.Signal.register("ITERATE")
-        self.count = count
 
 
     @farc.Hsm.state
@@ -25,6 +24,7 @@ class Iterate(farc.Ahsm):
         sig = event.signal
         if sig == farc.Signal.ENTRY:
             print("iterating")
+            me.count = 10
             me.postFIFO(me.iter_evt)
             return me.handled(me, event)
 
@@ -54,7 +54,7 @@ class Iterate(farc.Ahsm):
 
 
 if __name__ == "__main__":
-    sl = Iterate(10)
+    sl = Iterate()
     sl.start(0)
 
     loop = asyncio.get_event_loop()
