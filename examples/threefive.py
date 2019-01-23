@@ -2,7 +2,6 @@
 
 
 import asyncio
-from time import sleep
 
 import farc
 
@@ -26,7 +25,6 @@ class Three(farc.Ahsm):
 
         elif sig == farc.Signal.TICK3:
             print("three tick")
-            sleep(0.10)
             return me.handled(me, event)
 
         elif sig == farc.Signal.EXIT:
@@ -56,7 +54,6 @@ class Five(farc.Ahsm):
 
         elif sig == farc.Signal.TICK5:
             print("five tick")
-            sleep(0.20)
             return me.handled(me, event)
 
         elif sig == farc.Signal.EXIT:
@@ -68,7 +65,8 @@ class Five(farc.Ahsm):
 
 
 if __name__ == "__main__":
-    farc.Spy.enable_spy(farc.VcdSpy)
+    # Uncomment this line to get a visual execution trace (to demonstrate debugging)
+    #farc.Spy.enable_spy(farc.VcdSpy)
 
     three = Three(Three.initial)
     five = Five(Five.initial)
