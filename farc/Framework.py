@@ -291,3 +291,14 @@ class Framework(object):
         _event_loop.add_signal_handler(29, print_info.__func__)
     except NotImplementedError:
         pass
+
+def run_forever():
+    """Runs the asyncio event loop with and
+    ensures state machines are exited upon a KeyboardInterrupt.
+    """
+    loop = asyncio.get_event_loop()
+    try:
+        loop.run_forever()
+    finally:
+        Framework.stop()
+    loop.close()
