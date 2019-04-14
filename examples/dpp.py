@@ -133,7 +133,7 @@ class Philo(farc.Ahsm):
         sig = event.signal
         if sig == farc.Signal.ENTRY:
             e = farc.Event(farc.Signal.HUNGRY, PHILO_ID(self))
-            farc.Framework.post(e, "Table")
+            farc.Framework.post_by_name(e, "Table")
             status = self.handled(self, event)
 
         elif sig == farc.Signal.EAT:
