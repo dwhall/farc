@@ -10,7 +10,8 @@ import sys
 from .Spy import Spy
 from .Signal import Signal
 from .Event import Event
-from .Ahsm import Ahsm
+#TODO: fix circular reference
+#from .Ahsm import Ahsm
 
 
 class Framework(object):
@@ -59,7 +60,8 @@ class Framework(object):
         """Posts the event to the given Ahsm's event queue.
         The argument, act, is an Ahsm instance.
         """
-        assert isinstance(act, Ahsm)
+#TODO: fix circular reference
+#        assert isinstance(act, Ahsm)
         act.postFIFO(event)
 
 
