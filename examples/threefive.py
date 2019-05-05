@@ -7,14 +7,14 @@ import farc
 class Three(farc.Ahsm):
 
     @farc.Hsm.state
-    def initial(me, event):
-        print("Three initial")
+    def _initial(me, event):
+        print("Three _initial")
         me.te = farc.TimeEvent("TICK3")
-        return me.tran(me, Three.running)
+        return me.tran(me, Three._running)
 
 
     @farc.Hsm.state
-    def running(me, event):
+    def _running(me, event):
         sig = event.signal
         if sig == farc.Signal.ENTRY:
             print("three enter")
@@ -36,14 +36,14 @@ class Three(farc.Ahsm):
 class Five(farc.Ahsm):
 
     @farc.Hsm.state
-    def initial(me, event):
-        print("Five initial")
+    def _initial(me, event):
+        print("Five _initial")
         me.te = farc.TimeEvent("TICK5")
-        return me.tran(me, Five.running)
+        return me.tran(me, Five._running)
 
 
     @farc.Hsm.state
-    def running(me, event):
+    def _running(me, event):
         sig = event.signal
         if sig == farc.Signal.ENTRY:
             print("five enter")
@@ -66,8 +66,8 @@ if __name__ == "__main__":
     # Uncomment this line to get a visual execution trace (to demonstrate debugging)
     #farc.Spy.enable_spy(farc.VcdSpy)
 
-    three = Three(Three.initial)
-    five = Five(Five.initial)
+    three = Three(Three._initial)
+    five = Five(Five._initial)
 
     three.start(3)
     five.start(5)
