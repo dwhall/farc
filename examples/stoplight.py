@@ -55,7 +55,7 @@ class Stoplight(farc.Ahsm):
 
 
 if __name__ == "__main__":
-    sl = Stoplight(Stoplight._initial)
+    sl = Stoplight()
     sl.start(0)
 
     loop = asyncio.get_event_loop()

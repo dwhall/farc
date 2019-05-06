@@ -8,7 +8,7 @@ import farc
 
 class Iterate(farc.Ahsm):
     def __init__(self,):
-        super().__init__(Iterate._initial)
+        super().__init__()
         farc.Signal.register("ITERATE")
 
 

@@ -39,7 +39,7 @@ class Mississippi(farc.Ahsm):
 
 if __name__ == "__main__":
     print("Check to see how much CPU% a simple 1ms periodic function uses.")
-    ms = Mississippi(Mississippi._initial)
+    ms = Mississippi()
     ms.start(0)
 
     loop = asyncio.get_event_loop()

@@ -8,7 +8,7 @@ import farc
 
 class Countdown(farc.Ahsm):
     def __init__(self, count=3):
-        super().__init__(Countdown._initial)
+        super().__init__()
         self.count = count
 
 

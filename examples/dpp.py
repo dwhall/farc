@@ -38,8 +38,8 @@ def EAT_TIME():
     return random.randrange(1, 9)
 
 class Table(farc.Ahsm):
-    def __init__(self, initialState):
-        super(Table, self).__init__(initialState)
+    def __init__(self,):
+        super().__init__()
         self.fork = ["FREE",] * N_PHILO
         self.isHungry = [False,] * N_PHILO
 
@@ -177,12 +177,12 @@ class Philo(farc.Ahsm):
 def main():
     global philo
 
-    table = Table(Table._initial)
+    table = Table()
     table.start(0)
 
     philo = []
     for n in range(N_PHILO):
-        p = Philo(Philo._initial)
+        p = Philo()
         p.start(n+1)
         philo.append(p)
 

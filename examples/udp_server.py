@@ -121,7 +121,7 @@ class UdpRelayAhsm(farc.Ahsm):
 
 
 if __name__ == "__main__":
-    relay = UdpRelayAhsm(UdpRelayAhsm._initial)
+    relay = UdpRelayAhsm()
     relay.start(0)
 
     loop = asyncio.get_event_loop()

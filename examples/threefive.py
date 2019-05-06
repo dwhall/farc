@@ -66,8 +66,8 @@ if __name__ == "__main__":
     # Uncomment this line to get a visual execution trace (to demonstrate debugging)
     #farc.Spy.enable_spy(farc.VcdSpy)
 
-    three = Three(Three._initial)
-    five = Five(Five._initial)
+    three = Three()
+    five = Five()
 
     three.start(3)
     five.start(5)

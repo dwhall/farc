@@ -28,7 +28,7 @@ class Hsm(object):
     # RET_INITIAL
 
 
-    def __init__(self, initialState):
+    def __init__(self,):
         """Sets this Hsm's current state to Hsm.top(), the default state
         and stores the given initial state.
         """
@@ -37,7 +37,17 @@ class Hsm(object):
         # that will be called whenever a message is sent to this Hsm.
         # We initialize this to self.top, the default message handler
         self.state = self.top
-        self.initialState = initialState
+
+        # Farc differs from QP here in that we hardcode
+        # the initial state to be "_initial"
+        self.initial_state = self._initial
+
+
+    def _initial(self, event):
+        """Raises a NotImplementedError to force the derived class
+        to implement its own initial state.
+        """
+        raise NotImplementedError
 
 
     def state(func):
@@ -98,7 +108,7 @@ class Hsm(object):
         """
 
         # The initial state MUST transition to another state
-        assert me.initialState(me, event) == Hsm.RET_TRAN
+        assert me.initial_state(me, event) == Hsm.RET_TRAN
 
         # HSM starts in the top state
         t = Hsm.top
