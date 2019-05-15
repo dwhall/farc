@@ -4,19 +4,15 @@ Copyright 2018 Dean Hall.  See LICENSE file for details.
 
 
 class Spy(object):
-    """Spy - the farc framework debugging system
-
-    farc source code has calls to various Spy.on_foo() methods
-    placed in locations where very important things happen.
-    By itself, Spy does nothing.
-    When a farc application calls Spy.enable_spy(arg)
-    with a class as the argument, that's when the farc framework's
-    calls to Spy.on_foo() actually do something.
-
-    See the VcdSpy module and class for an example of how
-    to create a Spy debugging system.  In VcdSpy's case,
-    it outputs farc message indicators and message handler
-    execution timelines to a Value Change Dump (VCD) file.
+    """Spy is the debugging system for farc.
+    farc contains a handful of Spy.on_foo() and Spy.on_bar() methods
+    placed at critically useful locations throughout the framework.
+    It is up to a Spy implementation (such as the included VcdSpy)
+    to act on the Spy.on_*() methods.
+    The programmer calls Spy.enable_spy(<Spy implementation class>)
+    to activate the Spy system; otherwise, Spy does nothing.
+    Therefore, this class is designed so that calling Spy.anything() is inert
+    unless the application first calls Spy.enable_spy()
     """
     _actv_cls = None
 

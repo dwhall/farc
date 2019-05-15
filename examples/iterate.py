@@ -7,24 +7,24 @@ import farc
 
 
 class Iterate(farc.Ahsm):
-    def __init__(self, count=3):
-        super().__init__(Iterate.initial)
+    def __init__(self,):
+        super().__init__()
         farc.Signal.register("ITERATE")
-        self.count = count
 
 
     @farc.Hsm.state
-    def initial(me, event):
-        print("initial")
+    def _initial(me, event):
+        print("_initial")
         me.iter_evt = farc.Event(farc.Signal.ITERATE, None)
-        return me.tran(me, Iterate.iterating)
+        return me.tran(me, Iterate._iterating)
 
 
     @farc.Hsm.state
-    def iterating(me, event):
+    def _iterating(me, event):
         sig = event.signal
         if sig == farc.Signal.ENTRY:
-            print("iterating")
+            print("_iterating")
+            me.count = 10
             me.postFIFO(me.iter_evt)
             return me.handled(me, event)
 
@@ -32,7 +32,7 @@ class Iterate(farc.Ahsm):
             print(me.count)
 
             if me.count == 0:
-                return me.tran(me, Iterate.done)
+                return me.tran(me, Iterate._exiting)
             else:
                 # do work
                 me.count -= 1
@@ -43,10 +43,10 @@ class Iterate(farc.Ahsm):
 
 
     @farc.Hsm.state
-    def done(me, event):
+    def _exiting(me, event):
         sig = event.signal
         if sig == farc.Signal.ENTRY:
-            print("done")
+            print("_exiting")
             farc.Framework.stop()
             return me.handled(me, event)
 
@@ -54,7 +54,7 @@ class Iterate(farc.Ahsm):
 
 
 if __name__ == "__main__":
-    sl = Iterate(10)
+    sl = Iterate()
     sl.start(0)
 
     loop = asyncio.get_event_loop()

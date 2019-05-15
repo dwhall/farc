@@ -9,53 +9,53 @@ import farc
 class Stoplight(farc.Ahsm):
 
     @farc.Hsm.state
-    def initial(me, event):
-        print("Stoplight initial")
+    def _initial(me, event):
+        print("Stoplight _initial")
 
         te = farc.TimeEvent("TIME_TICK")
         te.postEvery(me, 2.0)
 
-        return me.tran(me, Stoplight.red)
+        return me.tran(me, Stoplight._red)
 
 
     @farc.Hsm.state
-    def red(me, event):
+    def _red(me, event):
         sig = event.signal
         if sig == farc.Signal.ENTRY:
-            print("red enter")
+            print("_red enter")
             return me.handled(me, event)
 
         elif sig == farc.Signal.TIME_TICK:
-            print("red next")
-            return me.tran(me, Stoplight.green)
+            print("_red next")
+            return me.tran(me, Stoplight._green)
 
         elif sig == farc.Signal.EXIT:
-            print("red exit")
+            print("_red exit")
             return me.handled(me, event)
 
         return me.super(me, me.top)
 
 
     @farc.Hsm.state
-    def green(me, event):
+    def _green(me, event):
         sig = event.signal
         if sig == farc.Signal.ENTRY:
-            print("green enter")
+            print("_green enter")
             return me.handled(me, event)
 
         elif sig == farc.Signal.TIME_TICK:
-            print("green next")
-            return me.tran(me, Stoplight.red)
+            print("_green next")
+            return me.tran(me, Stoplight._red)
 
         elif sig == farc.Signal.EXIT:
-            print("green exit")
+            print("_green exit")
             return me.handled(me, event)
 
         return me.super(me, me.top)
 
 
 if __name__ == "__main__":
-    sl = Stoplight(Stoplight.initial)
+    sl = Stoplight()
     sl.start(0)
 
     loop = asyncio.get_event_loop()

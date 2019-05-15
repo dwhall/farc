@@ -38,7 +38,7 @@ class UdpServer:
 class UdpRelayAhsm(farc.Ahsm):
 
     @farc.Hsm.state
-    def initial(me, event):
+    def _initial(me, event):
         farc.Framework.subscribe("NET_ERR", me)
         farc.Framework.subscribe("NET_RXD", me)
         me.tmr = farc.TimeEvent("FIVE_COUNT")
@@ -46,11 +46,11 @@ class UdpRelayAhsm(farc.Ahsm):
         loop = asyncio.get_event_loop()
         server = loop.create_datagram_endpoint(UdpServer, local_addr=("localhost", UDP_PORT))
         me.transport, me.protocol = loop.run_until_complete(server)
-        return me.tran(me, UdpRelayAhsm.waiting)
+        return me.tran(me, UdpRelayAhsm._waiting)
 
 
     @farc.Hsm.state
-    def waiting(me, event):
+    def _waiting(me, event):
         sig = event.signal
         if sig == farc.Signal.ENTRY:
             print("Awaiting a UDP datagram on port {0}.  Try: $ nc -u localhost {0}".format(UDP_PORT))
@@ -59,16 +59,16 @@ class UdpRelayAhsm(farc.Ahsm):
         elif sig == farc.Signal.NET_RXD:
             me.latest_msg, me.latest_addr = event.value
             print("RelayFrom(%s): %r" % (me.latest_addr, me.latest_msg.decode()))
-            return me.tran(me, UdpRelayAhsm.relaying)
+            return me.tran(me, UdpRelayAhsm._relaying)
 
         elif sig == farc.Signal.SIGTERM:
-            return me.tran(me, UdpRelayAhsm.exiting)
+            return me.tran(me, UdpRelayAhsm._exiting)
 
         return me.super(me, me.top)
 
 
     @farc.Hsm.state
-    def relaying(me, event):
+    def _relaying(me, event):
         sig = event.signal
         if sig == farc.Signal.ENTRY:
             me.tmr.postEvery(me, 5.000)
@@ -85,11 +85,11 @@ class UdpRelayAhsm(farc.Ahsm):
             return me.handled(me, event)
 
         elif sig == farc.Signal.NET_ERR:
-            return me.tran(me, UdpRelayAhsm.waiting)
+            return me.tran(me, UdpRelayAhsm._waiting)
 
         elif sig == farc.Signal.SIGTERM:
             me.tmr.disarm()
-            return me.tran(me, UdpRelayAhsm.exiting)
+            return me.tran(me, UdpRelayAhsm._exiting)
 
         elif sig == farc.Signal.EXIT:
             print("Leaving timer event running so Ctrl+C will be handled on Windows")
@@ -99,7 +99,7 @@ class UdpRelayAhsm(farc.Ahsm):
 
 
     @farc.Hsm.state
-    def exiting(me, event):
+    def _exiting(me, event):
         sig = event.signal
         if sig == farc.Signal.ENTRY:
             print("exiting")
@@ -121,7 +121,7 @@ class UdpRelayAhsm(farc.Ahsm):
 
 
 if __name__ == "__main__":
-    relay = UdpRelayAhsm(UdpRelayAhsm.initial)
+    relay = UdpRelayAhsm()
     relay.start(0)
 
     loop = asyncio.get_event_loop()

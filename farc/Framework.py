@@ -10,7 +10,8 @@ import sys
 from .Spy import Spy
 from .Signal import Signal
 from .Event import Event
-from .Hsm import Hsm
+#TODO: fix circular reference
+#from .Ahsm import Ahsm
 
 
 class Framework(object):
@@ -57,22 +58,24 @@ class Framework(object):
     @staticmethod
     def post(event, act):
         """Posts the event to the given Ahsm's event queue.
-        The argument, act, is either a string of the name of the class
-        to which the event is sent or the Ahsm instance itself.
-        If the argument is a string, the event will post to all actors
+        The argument, act, is an Ahsm instance.
+        """
+#TODO: fix circular reference
+#        assert isinstance(act, Ahsm)
+        act.postFIFO(event)
+
+
+    @staticmethod
+    def post_by_name(event, act_name):
+        """Posts the event to the given Ahsm's event queue.
+        The argument, act, is a string of the name of the class
+        to which the event is sent.  The event will post to all actors
         having the given classname.
         """
-        if type(act) is str:
-            # I'm not convinced this is appropriate for the long term.
-            # post() should target one actor and publish() targets many.
-            # This was created to support legacy apps which use
-            # an actor's class name as the target.
-            # If this goes away, apps will need to adapt.
-            [a.postFIFO(event) for a in Framework._ahsm_registry
-                    if a.__class__.__name__ == act]
-        else:
-            assert isinstance(act, Hsm)
-            act.postFIFO(event)
+        assert type(act_name) is str
+        for act in Framework._ahsm_registry:
+            if act.__class__.__name__ == act_name:
+                act.postFIFO(event)
 
 
     @staticmethod
@@ -291,3 +294,14 @@ class Framework(object):
         _event_loop.add_signal_handler(29, print_info.__func__)
     except NotImplementedError:
         pass
+
+def run_forever():
+    """Runs the asyncio event loop with and
+    ensures state machines are exited upon a KeyboardInterrupt.
+    """
+    loop = asyncio.get_event_loop()
+    try:
+        loop.run_forever()
+    finally:
+        Framework.stop()
+    loop.close()

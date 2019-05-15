@@ -38,19 +38,19 @@ def EAT_TIME():
     return random.randrange(1, 9)
 
 class Table(farc.Ahsm):
-    def __init__(self, initialState):
-        super(Table, self).__init__(initialState)
+    def __init__(self,):
+        super().__init__()
         self.fork = ["FREE",] * N_PHILO
         self.isHungry = [False,] * N_PHILO
 
     @farc.Hsm.state
-    def initial(self, event):
+    def _initial(self, event):
         farc.Framework.subscribe("DONE", self)
         farc.Framework.subscribe("TERMINATE", self)
-        return self.tran(self, Table.serving)
+        return self.tran(self, Table._serving)
 
     @farc.Hsm.state
-    def serving(self, event):
+    def _serving(self, event):
         sig = event.signal
         if sig == farc.Signal.HUNGRY:
             # BSP.busyDelay()
@@ -105,20 +105,20 @@ class Table(farc.Ahsm):
 class Philo(farc.Ahsm):
 
     @farc.Hsm.state
-    def initial(self, event):
+    def _initial(self, event):
         self.timeEvt = farc.TimeEvent("TIMEOUT")
         farc.Framework.subscribe("EAT", self)
-        return self.tran(self, Philo.thinking)
+        return self.tran(self, Philo._thinking)
 
     @farc.Hsm.state
-    def thinking(self, event):
+    def _thinking(self, event):
         sig = event.signal
         if sig == farc.Signal.ENTRY:
             self.timeEvt.postIn(self, THINK_TIME())
             status = self.handled(self, event)
 
         elif sig == farc.Signal.TIMEOUT:
-            status = self.tran(self, Philo.hungry)
+            status = self.tran(self, Philo._hungry)
 
         elif sig == farc.Signal.EAT or sig == farc.Signal.DONE:
             assert event.value != PHILO_ID(self)
@@ -129,16 +129,16 @@ class Philo(farc.Ahsm):
         return status
 
     @farc.Hsm.state
-    def hungry(self, event):
+    def _hungry(self, event):
         sig = event.signal
         if sig == farc.Signal.ENTRY:
             e = farc.Event(farc.Signal.HUNGRY, PHILO_ID(self))
-            farc.Framework.post(e, "Table")
+            farc.Framework.post_by_name(e, "Table")
             status = self.handled(self, event)
 
         elif sig == farc.Signal.EAT:
             if event.value == PHILO_ID(self):
-                status = self.tran(self,Philo.eating)
+                status = self.tran(self,Philo._eating)
             else:
                 status = self.super(self, self.top) # UNHANDLED
 
@@ -151,7 +151,7 @@ class Philo(farc.Ahsm):
         return status
 
     @farc.Hsm.state
-    def eating(self, event):
+    def _eating(self, event):
         sig = event.signal
         if sig == farc.Signal.ENTRY:
             self.timeEvt.postIn(self, EAT_TIME())
@@ -163,7 +163,7 @@ class Philo(farc.Ahsm):
             status = self.handled(self, event)
 
         elif sig == farc.Signal.TIMEOUT:
-            status = self.tran(self,Philo.thinking)
+            status = self.tran(self,Philo._thinking)
 
         elif sig == farc.Signal.EAT or sig == farc.Signal.DONE:
             assert event.value != PHILO_ID(self)
@@ -177,12 +177,12 @@ class Philo(farc.Ahsm):
 def main():
     global philo
 
-    table = Table(Table.initial)
+    table = Table()
     table.start(0)
 
     philo = []
     for n in range(N_PHILO):
-        p = Philo(Philo.initial)
+        p = Philo()
         p.start(n+1)
         philo.append(p)
 
