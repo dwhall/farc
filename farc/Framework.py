@@ -295,6 +295,7 @@ class Framework(object):
     except NotImplementedError:
         pass
 
+
 def run_forever():
     """Runs the asyncio event loop with and
     ensures state machines are exited upon a KeyboardInterrupt.
@@ -302,6 +303,6 @@ def run_forever():
     loop = asyncio.get_event_loop()
     try:
         loop.run_forever()
-    finally:
+    except KeyboardInterrupt:
         Framework.stop()
     loop.close()
