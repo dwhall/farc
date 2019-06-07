@@ -7,9 +7,8 @@ import datetime
 import inspect
 import tempfile
 
-from .Signal import Signal
-from .Framework import Framework
-
+from . import Signal
+from . import Framework
 
 
 class VcdSpy(object):
@@ -30,6 +29,7 @@ class VcdSpy(object):
         # so that the pyvcd package is only required if VcdSpy is used
         global vcd
         import vcd # pip3 install pyvcd
+
         datestring = datetime.datetime.isoformat(datetime.datetime.now())
         VcdSpy._vcd_file = tempfile.NamedTemporaryFile(
                 mode='w', suffix=".vcd", delete=False)
