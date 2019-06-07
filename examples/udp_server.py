@@ -124,9 +124,4 @@ if __name__ == "__main__":
     relay = UdpRelayAhsm()
     relay.start(0)
 
-    loop = asyncio.get_event_loop()
-    try:
-        loop.run_forever()
-    except KeyboardInterrupt:
-        farc.Framework.stop()
-    loop.close()
+    farc.run_forever()

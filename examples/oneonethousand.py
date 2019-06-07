@@ -42,6 +42,4 @@ if __name__ == "__main__":
     ms = Mississippi()
     ms.start(0)
 
-    loop = asyncio.get_event_loop()
-    loop.run_forever()
-    loop.close()
+    farc.run_forever()

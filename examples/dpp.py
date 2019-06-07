@@ -186,9 +186,7 @@ def main():
         p.start(n+1)
         philo.append(p)
 
-    loop = asyncio.get_event_loop()
-    loop.run_forever()
-    loop.close()
+    farc.run_forever()
 
 
 if __name__ == "__main__":
