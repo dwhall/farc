@@ -1,8 +1,9 @@
 import asyncio
 import collections
+import math
 import signal
 import sys
-
+from functools import wraps
 
 class Spy(object):
     """Spy is the debugging system for farc.
@@ -162,7 +163,6 @@ class Hsm(object):
         """
         raise NotImplementedError
 
-
     def state(func):
         """A decorator that identifies which methods are states.
         The presence of the farc_state attr, not the value of the attr,
@@ -171,8 +171,15 @@ class Hsm(object):
         to determine which methods inside a class are actually states.
         Other uses of the attribute may come in the future.
         """
-        setattr(func, "farc_state", True)
-        return staticmethod(func)
+
+        @wraps(func)
+        def func_wrap(self, evt):
+            result = func(self, evt)
+            Spy.on_state_handler_called(func_wrap, evt, result)
+            return result
+
+        setattr(func_wrap, "farc_state", True)
+        return staticmethod(func_wrap)
 
     # Helper functions to process reserved events through the current state
     @staticmethod
@@ -211,6 +218,80 @@ class Hsm(object):
         # All other events are quietly ignored
         return Hsm.RET_IGNORED # p. 165
 
+    @staticmethod
+    def _perform_init_chain(me, current):
+        """Act on the chain of initializations required starting from current.""" 
+        t = current        
+        while Hsm.trig(me, t if t != Hsm.top else me.initial_state, Signal.INIT) == Hsm.RET_TRAN:
+            # The state handles the INIT message and needs to make a transition. The
+            #  "top" state is special in that it does not handle INIT messages, so we
+            #  defer to me.initial_state in this case
+            path = []  # Trace the path back to t via superstates
+            while me.state != t:
+                path.append(me.state)
+                Hsm.trig(me, me.state, Signal.EMPTY)
+            # Restore the state to the target state
+            me.state = path[0]
+            assert len(path) < 32  # MAX_NEST_DEPTH
+            # Perform ENTRY action for each state from current to the target
+            path.reverse()  # in-place
+            for s in path:
+                Hsm.enter(me, s)
+            # The target state has now to be checked to see if it responds to the INIT message
+            t = path[-1]  # -1 because path was reversed
+        return t
+
+    @staticmethod
+    def _perform_transition(me, source, target):
+        # Handle the state transition from source to target in the HSM.
+        s, t = source, target
+        path = [t]
+        if s == t:  # Case (a), transition to self
+            Hsm.exit(me,s)
+            Hsm.enter(me,t)
+        else:
+            # Find parent of target
+            Hsm.trig(me, t, Signal.EMPTY)
+            t = me.state  # t is now parent of target
+            if s == t:  # Case (b), source is parent of target
+                Hsm.enter(me, path[0])
+            else:
+                # Find parent of source
+                Hsm.trig(me, s, Signal.EMPTY)
+                if me.state == t:  # Case (c), source and target share a parent
+                    Hsm.exit(me, s)
+                    Hsm.enter(me, path[0])
+                else:
+                    if me.state == path[0]:  # Case (d), target is parent of source
+                        Hsm.exit(me, s)
+                    else:  # Check if the source is an ancestor of the target (case (e))
+                        lca_found = False
+                        path.append(t)  # Populates path[1]
+                        t = me.state  # t is now parent of source
+                        # Find and save ancestors of target into path
+                        #  until we find the source or hit the top
+                        me.state = path[1]
+                        while me.state != Hsm.top:
+                            Hsm.trig(me, me.state, Signal.EMPTY)
+                            path.append(me.state)
+                            assert len(path) < 32  # MAX_NEST_DEPTH
+                            if me.state == s:
+                                lca_found = True
+                                break 
+                        if lca_found:  # This is case (e), enter states to get to target
+                            for st in reversed(path[:-1]):
+                                Hsm.enter(me, st)
+                        else:
+                            Hsm.exit(me, s)  # Exit the source for cases (f), (g), (h)
+                            me.state = t  # Start at parent of the source
+                            while me.state not in path:
+                                # Keep exiting until we reach the LCA. Note that exit
+                                #  modifies me.state (so we do not use Signal.EMPTY)
+                                Hsm.exit(me, me.state)
+                            t = me.state
+                            # Step into children until we enter the target
+                            for st in reversed(path[:path.index(t)]):
+                                Hsm.enter(me, st)
 
     @staticmethod
     def init(me, event = None):
@@ -221,41 +302,9 @@ class Hsm(object):
         """
 
         # The initial state MUST transition to another state
-        assert me.initial_state(me, event) == Hsm.RET_TRAN
-
-        # HSM starts in the top state
-        t = Hsm.top
-
-        # Drill into the target
-        while True:
-
-            # Store the target of the initial transition
-            path = [me.state]
-
-            # From the designated initial state, record the path to top
-            Hsm.trig(me, me.state, Signal.EMPTY)
-            while me.state != t:
-                path.append(me.state)
-                Hsm.trig(me, me.state, Signal.EMPTY)
-
-            # Restore the target of the initial transition
-            me.state = path[0]
-            assert len(path) < 32 # MAX_NEST_DEPTH (32 is arbitrary)
-
-            # Perform ENTRY action for each state from after-top to initial
-            path.reverse()
-            for s in path:
-                Hsm.enter(me, s)
-
-            # Current state becomes new source (-1 because path was reversed)
-            t = path[-1]
-
-            if Hsm.trig(me, t, Signal.INIT) != Hsm.RET_TRAN:
-                break
-
-        # Current state is set to the final leaf state
-        me.state = t
-
+        status = me.initial_state(me, event)
+        assert status == Hsm.RET_TRAN
+        me.state = Hsm._perform_init_chain(me, Hsm.top)
 
     @staticmethod
     def dispatch(me, event):
@@ -269,7 +318,8 @@ class Hsm(object):
         # Save the current state
         t = me.state
 
-        # Proceed to superstates if event is not handled
+        # Proceed to superstates if event is not handled, we wish to find the superstate
+        #  (if any) that does handle the event and to record the path to that state
         exit_path = []
         r = Hsm.RET_SUPER
         while r == Hsm.RET_SUPER:
@@ -277,52 +327,26 @@ class Hsm(object):
             exit_path.append(s)
             Spy.on_hsm_dispatch_pre(s)
             r = s(me, event)    # invoke state handler
-
+        # We leave the while loop with s at the state which was able to respond
+        #  to the event, or to Hsm.top if none did
         Spy.on_hsm_dispatch_post(exit_path)
 
-        # If the state handler indicates a transition
+        # If the state handler for s requests a transition
         if r == Hsm.RET_TRAN:
-
-            # Store target of transition
             t = me.state
-
-            # Record path to top
-            Hsm.trig(me, me.state, Signal.EMPTY)
-            while me.state != Hsm.top:
-                exit_path.append(me.state)
-                Hsm.trig(me, me.state, Signal.EMPTY)
-
-            # Record path from target to top
-            me.state = t
-            entry_path = []
-            r = Hsm.RET_TRAN
-            while me.state != Hsm.top:
-                entry_path.append(me.state)
-                Hsm.trig(me, me.state, Signal.EMPTY)
-
-            # Find the Least Common Ancestor between the source and target
-            i = -1
-            while exit_path[i] == entry_path[i]:
-                i -= 1
-            n = len(exit_path) + i + 1
-
-            # Exit all states in the exit path
-            for st in exit_path[0:n]:
+            # Store target of transition
+            # Exit from the current state to the state s which handles 
+            # the transition. We do not exit from s=exit_path[-1] itself.
+            for st in exit_path[:-1]:
                 r = Hsm.exit(me, st)
                 assert (r == Hsm.RET_SUPER) or (r == Hsm.RET_HANDLED)
+            s = exit_path[-1]
+            # Transition to t through the HSM
+            Hsm._perform_transition(me, s, t)
+            # Do initializations starting at t
+            t = Hsm._perform_init_chain(me, t)
 
-            # Enter all states in the entry path
-            # This is done in the reverse order of the path
-            for st in entry_path[n::-1]:
-                r = Hsm.enter(me, st)
-                assert r == Hsm.RET_HANDLED, (
-                        "Expected ENTRY to return "
-                        "HANDLED transitioning to {0}".format(t))
-
-            # Arrive at the target state
-            me.state = t
-
-        # Restore the current state
+        # Restore the state
         me.state = t
 
 
