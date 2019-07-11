@@ -32,6 +32,10 @@ class FarcTest(farc.Ahsm):
         sig = event.signal
         if sig == farc.Signal.INIT:
             return me.tran(me, FarcTest._s11)
+        elif sig == farc.Signal.ENTRY:
+            return me.handled(me, event)
+        elif sig == farc.Signal.EXIT:
+            return me.handled(me, event)
         elif sig == farc.Signal.i:
             if me.foo:
                 me.foo = 0
@@ -47,6 +51,10 @@ class FarcTest(farc.Ahsm):
         sig = event.signal
         if sig == farc.Signal.INIT:
             return me.tran(me, FarcTest._s11)
+        elif sig == farc.Signal.ENTRY:
+            return me.handled(me, event)
+        elif sig == farc.Signal.EXIT:
+            return me.handled(me, event)
         elif sig == farc.Signal.a:
             return me.tran(me, FarcTest._s1)
         elif sig == farc.Signal.b:
@@ -67,7 +75,11 @@ class FarcTest(farc.Ahsm):
     @farc.Hsm.state
     def _s11(me, event):
         sig = event.signal
-        if sig == farc.Signal.d:
+        if sig == farc.Signal.ENTRY:
+            return me.handled(me, event)
+        elif sig == farc.Signal.EXIT:
+            return me.handled(me, event)
+        elif sig == farc.Signal.d:
             if me.foo:
                 me.foo = 0
                 # print(f"foo={me.foo}")
@@ -83,6 +95,10 @@ class FarcTest(farc.Ahsm):
         sig = event.signal
         if sig == farc.Signal.INIT:
             return me.tran(me, FarcTest._s211)
+        elif sig == farc.Signal.ENTRY:
+            return me.handled(me, event)
+        elif sig == farc.Signal.EXIT:
+            return me.handled(me, event)
         elif sig == farc.Signal.c:
             return me.tran(me, FarcTest._s1)
         elif sig == farc.Signal.f:
@@ -99,6 +115,10 @@ class FarcTest(farc.Ahsm):
         sig = event.signal
         if sig == farc.Signal.INIT:
             return me.tran(me, FarcTest._s211)
+        elif sig == farc.Signal.ENTRY:
+            return me.handled(me, event)
+        elif sig == farc.Signal.EXIT:
+            return me.handled(me, event)
         elif sig == farc.Signal.a:
             return me.tran(me, FarcTest._s21)
         elif sig == farc.Signal.b:
@@ -110,7 +130,11 @@ class FarcTest(farc.Ahsm):
     @farc.Hsm.state
     def _s211(me, event):
         sig = event.signal
-        if sig == farc.Signal.d:
+        if sig == farc.Signal.ENTRY:
+            return me.handled(me, event)
+        elif sig == farc.Signal.EXIT:
+            return me.handled(me, event)
+        elif sig == farc.Signal.d:
             return me.tran(me, FarcTest._s21)
         elif sig == farc.Signal.h:
             return me.tran(me, FarcTest._s)
@@ -122,6 +146,8 @@ class FarcTest(farc.Ahsm):
         if sig == farc.Signal.ENTRY:
             me.running = False
             farc.Framework.stop()
+            return me.handled(me, event)
+        elif sig == farc.Signal.EXIT:
             return me.handled(me, event)
 
         return me.super(me, me.top)
