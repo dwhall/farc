@@ -10,8 +10,14 @@ import tempfile
 from . import Signal
 from . import Framework
 
+class SpyType(type):
+    # This is used so that unimplemented static methods
+    #  swallow their arguments and return None
+    def __getattr__(cls, key):
+        # print(f'Called class attribute {key}')
+        return lambda *args, **kwargs: None
 
-class VcdSpy(object):
+class VcdSpy(metaclass=SpyType):
     """VcdSpy is a visual tracing system that, if enabled,
     generates a Value Change Dump (vcd) file.  A vcd viewer
     application such as GTKWave allows you to see a timeline of

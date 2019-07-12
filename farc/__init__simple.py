@@ -246,54 +246,31 @@ class Hsm(object):
         # Handle the state transition from source to target in the HSM.
         s, t = source, target
         path = [t]
-        if s == t:  # Case (a), transition to self
-            Hsm.exit(me,s)
-            Hsm.enter(me,t)
-        else:
-            # Find parent of target
-            Hsm.trig(me, t, Signal.EMPTY)
-            t = me.state  # t is now parent of target
-            if s == t:  # Case (b), source is parent of target
-                Hsm.enter(me, path[0])
-            else:
-                # Find parent of source
-                Hsm.trig(me, s, Signal.EMPTY)
-                if me.state == t:  # Case (c), source and target share a parent
-                    Hsm.exit(me, s)
-                    Hsm.enter(me, path[0])
-                else:
-                    if me.state == path[0]:  # Case (d), target is parent of source
-                        Hsm.exit(me, s)
-                    else:  # Check if the source is an ancestor of the target (case (e))
-                        lca_found = False
-                        path.append(t)  # Populates path[1]
-                        t = me.state  # t is now parent of source
-                        # Find and save ancestors of target into path
-                        #  until we find the source or hit the top
-                        me.state = path[1]
-                        while me.state != Hsm.top:
-                            Hsm.trig(me, me.state, Signal.EMPTY)
-                            path.append(me.state)
-                            assert len(path) < 32  # MAX_NEST_DEPTH
-                            if me.state == s:
-                                lca_found = True
-                                break 
-                        if lca_found:  # This is case (e), enter states to get to target
-                            for st in reversed(path[:-1]):
-                                Hsm.enter(me, st)
-                        else:
-                            Hsm.exit(me, s)  # Exit the source for cases (f), (g), (h)
-                            me.state = t  # Start at parent of the source
-                            while me.state not in path:
-                                # Keep exiting up into superstates until we reach the LCA. 
-                                #  Depending on whether the EXIT signal is handled, we may also need
-                                #  to send the EMPTY signal to make me.state climb to the superstate.
-                                if Hsm.exit(me, me.state) == Hsm.RET_HANDLED:
-                                    Hsm.trig(me, me.state, Signal.EMPTY)
-                            t = me.state
-                            # Step into children until we enter the target
-                            for st in reversed(path[:path.index(t)]):
-                                Hsm.enter(me, st)
+        lca_found = False
+        # Find and save ancestors of target into path
+        #  until we find the source or hit the top
+        me.state = t
+        while me.state != Hsm.top:
+            Hsm.trig(me, me.state, Signal.EMPTY)
+            path.append(me.state)
+            if me.state == s:
+                lca_found = True
+                break 
+        if lca_found:  # The source is an ancestor, just follow reversed path to get to target
+            for st in reversed(path[:-1]):
+                Hsm.enter(me, st)
+        else:  # All other cases require us to exit the source
+            Hsm.exit(me, s)
+            while me.state not in path:
+                # Keep exiting up into superstates until we reach the LCA. 
+                #  Depending on whether the EXIT signal is handled, we may also need
+                #  to send the EMPTY signal to make me.state climb to the superstate.
+                if Hsm.exit(me, me.state) == Hsm.RET_HANDLED:
+                    Hsm.trig(me, me.state, Signal.EMPTY)
+            t = me.state
+            # Step into decendents until we enter the target
+            for st in reversed(path[:path.index(t)]):
+                Hsm.enter(me, st)
 
     @staticmethod
     def init(me, event = None):
