@@ -5,6 +5,7 @@ import signal
 import sys
 from functools import wraps
 
+
 class Spy(object):
     """Spy is the debugging system for farc.
     farc contains a handful of Spy.on_*() methods
@@ -163,6 +164,7 @@ class Hsm(object):
         """
         raise NotImplementedError
 
+
     def state(func):
         """A decorator that identifies which methods are states.
         The presence of the farc_state attr, not the value of the attr,
@@ -171,7 +173,6 @@ class Hsm(object):
         to determine which methods inside a class are actually states.
         Other uses of the attribute may come in the future.
         """
-
         @wraps(func)
         def func_wrap(self, evt):
             result = func(self, evt)
@@ -218,10 +219,12 @@ class Hsm(object):
         # All other events are quietly ignored
         return Hsm.RET_IGNORED # p. 165
 
+
     @staticmethod
     def _perform_init_chain(me, current):
-        """Act on the chain of initializations required starting from current.""" 
-        t = current        
+        """Act on the chain of initializations required starting from current.
+        """
+        t = current
         while Hsm.trig(me, t if t != Hsm.top else me.initial_state, Signal.INIT) == Hsm.RET_TRAN:
             # The state handles the INIT message and needs to make a transition. The
             #  "top" state is special in that it does not handle INIT messages, so we
@@ -240,6 +243,7 @@ class Hsm(object):
             # The target state has now to be checked to see if it responds to the INIT message
             t = path[-1]  # -1 because path was reversed
         return t
+
 
     @staticmethod
     def _perform_transition(me, source, target):
@@ -277,7 +281,7 @@ class Hsm(object):
                             assert len(path) < 32  # MAX_NEST_DEPTH
                             if me.state == s:
                                 lca_found = True
-                                break 
+                                break
                         if lca_found:  # This is case (e), enter states to get to target
                             for st in reversed(path[:-1]):
                                 Hsm.enter(me, st)
@@ -285,7 +289,7 @@ class Hsm(object):
                             Hsm.exit(me, s)  # Exit the source for cases (f), (g), (h)
                             me.state = t  # Start at parent of the source
                             while me.state not in path:
-                                # Keep exiting up into superstates until we reach the LCA. 
+                                # Keep exiting up into superstates until we reach the LCA.
                                 #  Depending on whether the EXIT signal is handled, we may also need
                                 #  to send the EMPTY signal to make me.state climb to the superstate.
                                 if Hsm.exit(me, me.state) == Hsm.RET_HANDLED:
@@ -295,6 +299,7 @@ class Hsm(object):
                             for st in reversed(path[:path.index(t)]):
                                 Hsm.enter(me, st)
 
+
     @staticmethod
     def init(me, event = None):
         """Transitions to the initial state.  Follows any INIT transitions
@@ -302,7 +307,6 @@ class Hsm(object):
         Use this to pass any parameters to initialize the state machine.
         p. 172
         """
-
         # TODO: The initial state MUST transition to another state
         # The code that formerly did this was:
         #    status = me.initial_state(me, event)
@@ -311,6 +315,7 @@ class Hsm(object):
         # isn't executed twice.
 
         me.state = Hsm._perform_init_chain(me, Hsm.top)
+
 
     @staticmethod
     def dispatch(me, event):
@@ -341,7 +346,7 @@ class Hsm(object):
         if r == Hsm.RET_TRAN:
             t = me.state
             # Store target of transition
-            # Exit from the current state to the state s which handles 
+            # Exit from the current state to the state s which handles
             # the transition. We do not exit from s=exit_path[-1] itself.
             for st in exit_path[:-1]:
                 r = Hsm.exit(me, st)
