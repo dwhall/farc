@@ -303,9 +303,13 @@ class Hsm(object):
         p. 172
         """
 
-        # The initial state MUST transition to another state
-        status = me.initial_state(me, event)
-        assert status == Hsm.RET_TRAN
+        # TODO: The initial state MUST transition to another state
+        # The code that formerly did this was:
+        #    status = me.initial_state(me, event)
+        #    assert status == Hsm.RET_TRAN
+        # But the above code is commented out so an Ahsm's _initial()
+        # isn't executed twice.
+
         me.state = Hsm._perform_init_chain(me, Hsm.top)
 
     @staticmethod
