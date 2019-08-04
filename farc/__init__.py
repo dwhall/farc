@@ -611,11 +611,11 @@ class Framework(object):
             Framework._tm_event_handle.cancel()
             Framework._tm_event_handle = None
 
-        # Post SIGTERM to all Ahsms so they execute their EXIT handler
+        # Post EXIT to all Ahsms
         for act in Framework._ahsm_registry:
-            Framework.post(Event.SIGTERM, act)
+            Framework.post(Event.EXIT, act)
 
-        # Run to completion so each Ahsm will process SIGTERM
+        # Run to completion and stop the asyncio event loop
         Framework.run()
         Framework._event_loop.stop()
 
