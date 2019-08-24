@@ -670,9 +670,13 @@ class Ahsm(Hsm):
 
     def postLIFO(self, evt):
         self.mq.append(evt)
+        # Run to completion
+        Framework._event_loop.call_soon_threadsafe(Framework.run)
 
     def postFIFO(self, evt):
         self.mq.appendleft(evt)
+        # Run to completion
+        Framework._event_loop.call_soon_threadsafe(Framework.run)
 
     def pop_msg(self,):
         return self.mq.pop()
