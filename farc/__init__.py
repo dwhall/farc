@@ -432,8 +432,7 @@ class Framework(object):
         if event.signal in Framework._subscriber_table:
             for act in Framework._subscriber_table[event.signal]:
                 act.postFIFO(event)
-        # Run to completion
-        Framework._event_loop.call_soon_threadsafe(Framework.run)
+        Framework.run_to_completion()
 
 
     @staticmethod
@@ -567,8 +566,7 @@ class Framework(object):
                 next_expiration, Framework.timeEventCallback, next_event,
                 next_expiration)
 
-        # Run to completion
-        Framework._event_loop.call_soon_threadsafe(Framework.run)
+        Framework.run_to_completion()
 
 
     @staticmethod
@@ -603,6 +601,11 @@ class Framework(object):
 
 
     @staticmethod
+    def run_to_completion():
+        Framework._event_loop.call_soon_threadsafe(Framework.run)
+
+
+    @staticmethod
     def stop():
         """EXITs all Ahsms and stops the event loop.
         """
@@ -615,10 +618,10 @@ class Framework(object):
         for act in Framework._ahsm_registry:
             Framework.post(Event.EXIT, act)
 
-        # Run to completion and stop the asyncio event loop
+        # Run to completion in this context
+        # and stop the asyncio event loop
         Framework.run()
         Framework._event_loop.stop()
-
         Spy.on_framework_stop()
 
 
@@ -665,18 +668,15 @@ class Ahsm(Hsm):
         Framework.add(self)
         self.mq = collections.deque()
         self.init(self, initEvent)
-        # Run to completion
-        Framework._event_loop.call_soon_threadsafe(Framework.run)
+        Framework.run_to_completion()
 
     def postLIFO(self, evt):
         self.mq.append(evt)
-        # Run to completion
-        Framework._event_loop.call_soon_threadsafe(Framework.run)
+        Framework.run_to_completion()
 
     def postFIFO(self, evt):
         self.mq.appendleft(evt)
-        # Run to completion
-        Framework._event_loop.call_soon_threadsafe(Framework.run)
+        Framework.run_to_completion()
 
     def pop_msg(self,):
         return self.mq.pop()
