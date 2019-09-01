@@ -1,6 +1,7 @@
 import asyncio
 import collections
 import math
+import pickle
 import signal
 import sys
 from functools import wraps
@@ -105,14 +106,28 @@ Signal.register("SIGINT")  # (i.e. Ctrl+C)
 Signal.register("SIGTERM") # (i.e. kill <pid>)
 
 
-Event = collections.namedtuple("Event", ["signal", "value"])
+class Event(object):
+    """Events are a coupling of a signal and a value.
+    Events are passed from one AHSM to another.
+    Signals are defined in each AHSM's source code by name,
+    but resolve to a unique number.  Values are any python value,
+    including containers that contain even more values.
+    When the event is created, if the value passed to the constructor
+    is not None, the value is serialized to a bytes object.
+    This serialization prevents the original value from being modified
+    by other AHSMs.  Each AHSM state (static method) accepts an Event
+    as the parameter and handles the event based on its Signal.
+    """
+    def __init__(self, sigid, val):
+        assert 0 <= sigid <= len(Signal._lookup)
+        self.signal = sigid
 
-Event.__doc__ = """Events are a tuple of (signal, value) that are passed from
-    one AHSM to another.  Signals are defined in each AHSM's source code
-    by name, but resolve to a unique number.  Values are any python value,
-    including containers that contain even more values.  Each AHSM state
-    (static method) accepts an Event as the parameter and handles the event
-    based on its Signal."""
+        # serialize the value
+        self._value = pickle.dumps(val)
+
+    @property
+    def value(self,):
+        return pickle.loads(self._value)
 
 # Instantiate the reserved (system) events
 Event.EMPTY = Event(Signal.EMPTY, None)

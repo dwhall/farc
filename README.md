@@ -7,16 +7,10 @@ written in Python3.  In other words, a cheap knock-off of
 describes QP and how to program [statecharts](https://statecharts.github.io)(a.k.a. hierarchical state machines).
 
 This framework has fewer than 1000 LOC.  It allows the programmer to create
-highly-concurrent programs by using a "message-passing" system and
+highly-concurrent programs by using a message-passing system and
 run-to-completion message handlers within a state-machine architecture.
 With these tools, complex, asynchronous operations are decomposed
 into managable chunks of code.
-
-In the paragraph above message-passing is in quotes because farc is doing
-object reference copy and not object copy or serialization.
-This leaves the programmer open to nasty side-effects.
-For example, if you pass a list object and the recipient modifies the list,
-the sender experiences those modifications even after the message was passed.
 
 Known Issue: On windows, Ctrl+C is supressed by asyncio event loop's
 run_forever() ([bug report](https://bugs.python.org/issue23057)).
