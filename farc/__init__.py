@@ -746,6 +746,3 @@ class TimeEvent(object):
         """
         self.act = None
         Framework.removeTimeEvent(self)
-
-
-from .VcdSpy import VcdSpy
