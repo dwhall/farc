@@ -1,40 +1,38 @@
 #!/usr/bin/env python3
 
 
-import asyncio
-
 import farc
 
 
 class Mississippi(farc.Ahsm):
 
     @farc.Hsm.state
-    def _initial(me, event):
+    def _initial(self, event):
         print("_initial")
-        me.teCount = farc.TimeEvent("COUNT")
-        me.tePrint = farc.TimeEvent("PRINT")
-        return me.tran(me, Mississippi._counting)
+        self.teCount = farc.TimeEvent("COUNT")
+        self.tePrint = farc.TimeEvent("PRINT")
+        return self.tran(Mississippi._counting)
 
 
     @farc.Hsm.state
-    def _counting(me, event):
+    def _counting(self, event):
         sig = event.signal
         if sig == farc.Signal.ENTRY:
             print("_counting enter")
-            me._count = 0
-            me.teCount.postEvery(me, 0.001)
-            me.tePrint.postEvery(me, 1.000)
-            return me.handled(me, event)
+            self._count = 0
+            self.teCount.postEvery(self, 0.001)
+            self.tePrint.postEvery(self, 1.000)
+            return self.handled(event)
 
         elif sig == farc.Signal.COUNT:
-            me._count += 1
-            return me.handled(me, event)
+            self._count += 1
+            return self.handled(event)
 
         elif sig == farc.Signal.PRINT:
-            print(me._count, "millis")
-            return me.handled(me, event)
+            print(self._count, "millis")
+            return self.handled(event)
 
-        return me.super(me, me.top)
+        return self.super(self.top)
 
 
 if __name__ == "__main__":

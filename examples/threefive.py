@@ -7,59 +7,59 @@ import farc
 class Three(farc.Ahsm):
 
     @farc.Hsm.state
-    def _initial(me, event):
+    def _initial(self, event):
         print("Three _initial")
-        me.te = farc.TimeEvent("TICK3")
-        return me.tran(me, Three._running)
+        self.te = farc.TimeEvent("TICK3")
+        return self.tran(Three._running)
 
 
     @farc.Hsm.state
-    def _running(me, event):
+    def _running(self, event):
         sig = event.signal
         if sig == farc.Signal.ENTRY:
             print("three enter")
-            me.te.postEvery(me, 3)
-            return me.handled(me, event)
+            self.te.postEvery(self, 3)
+            return self.handled(event)
 
         elif sig == farc.Signal.TICK3:
             print("three tick")
-            return me.handled(me, event)
+            return self.handled(event)
 
         elif sig == farc.Signal.EXIT:
             print("three exit")
-            me.te.disarm()
-            return me.handled(me, event)
+            self.te.disarm()
+            return self.handled(event)
 
-        return me.super(me, me.top)
+        return self.super(self.top)
 
 
 class Five(farc.Ahsm):
 
     @farc.Hsm.state
-    def _initial(me, event):
+    def _initial(self, event):
         print("Five _initial")
-        me.te = farc.TimeEvent("TICK5")
-        return me.tran(me, Five._running)
+        self.te = farc.TimeEvent("TICK5")
+        return self.tran(Five._running)
 
 
     @farc.Hsm.state
-    def _running(me, event):
+    def _running(self, event):
         sig = event.signal
         if sig == farc.Signal.ENTRY:
             print("five enter")
-            me.te.postEvery(me, 5)
-            return me.handled(me, event)
+            self.te.postEvery(self, 5)
+            return self.handled(event)
 
         elif sig == farc.Signal.TICK5:
             print("five tick")
-            return me.handled(me, event)
+            return self.handled(event)
 
         elif sig == farc.Signal.EXIT:
             print("five exit")
-            me.te.disarm()
-            return me.handled(me, event)
+            self.te.disarm()
+            return self.handled(event)
 
-        return me.super(me, me.top)
+        return self.super(self.top)
 
 
 if __name__ == "__main__":

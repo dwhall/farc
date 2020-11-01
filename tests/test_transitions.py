@@ -35,139 +35,139 @@ class AllTransitionsHsm(farc.Ahsm):
         self.running = None
 
     @farc.Hsm.state
-    def _initial(me, event):
-        me.running = True
-        me.foo = 0
-        return me.tran(me, AllTransitionsHsm._s2)
+    def _initial(self, event):
+        self.running = True
+        self.foo = 0
+        return self.tran(AllTransitionsHsm._s2)
 
 
     @farc.Hsm.state
-    def _s(me, event):
+    def _s(self, event):
         sig = event.signal
         if sig == farc.Signal.INIT:
-            return me.tran(me, AllTransitionsHsm._s11)
+            return self.tran(AllTransitionsHsm._s11)
         elif sig == farc.Signal.ENTRY:
-            return me.handled(me, event)
+            return self.handled(event)
         elif sig == farc.Signal.EXIT:
-            return me.handled(me, event)
+            return self.handled(event)
         elif sig == farc.Signal.i:
-            if me.foo:
-                me.foo = 0
-                return me.handled(me, event)
+            if self.foo:
+                self.foo = 0
+                return self.handled(event)
         elif sig == farc.Signal.e:
-            return me.tran(me, AllTransitionsHsm._s11)
+            return self.tran(AllTransitionsHsm._s11)
         elif sig == farc.Signal.t:
-            return me.tran(me, AllTransitionsHsm._exiting)
-        return me.super(me, me.top)
+            return self.tran(AllTransitionsHsm._exiting)
+        return self.super(self.top)
 
 
     @farc.Hsm.state
-    def _s1(me, event):
+    def _s1(self, event):
         sig = event.signal
         if sig == farc.Signal.INIT:
-            return me.tran(me, AllTransitionsHsm._s11)
+            return self.tran(AllTransitionsHsm._s11)
         elif sig == farc.Signal.ENTRY:
-            return me.handled(me, event)
+            return self.handled(event)
         elif sig == farc.Signal.EXIT:
-            return me.handled(me, event)
+            return self.handled(event)
         elif sig == farc.Signal.a:
-            return me.tran(me, AllTransitionsHsm._s1)
+            return self.tran(AllTransitionsHsm._s1)
         elif sig == farc.Signal.b:
-            return me.tran(me, AllTransitionsHsm._s11)
+            return self.tran(AllTransitionsHsm._s11)
         elif sig == farc.Signal.c:
-            return me.tran(me, AllTransitionsHsm._s2)
+            return self.tran(AllTransitionsHsm._s2)
         elif sig == farc.Signal.d:
-            if not me.foo:
-                me.foo = 1
-                return me.tran(me, AllTransitionsHsm._s)
+            if not self.foo:
+                self.foo = 1
+                return self.tran(AllTransitionsHsm._s)
         elif sig == farc.Signal.f:
-            return me.tran(me, AllTransitionsHsm._s211)
+            return self.tran(AllTransitionsHsm._s211)
         elif sig == farc.Signal.i:
-            return me.handled(me, event)
-        return me.super(me, AllTransitionsHsm._s)
+            return self.handled(event)
+        return self.super(AllTransitionsHsm._s)
 
 
     @farc.Hsm.state
-    def _s11(me, event):
+    def _s11(self, event):
         sig = event.signal
         if sig == farc.Signal.ENTRY:
-            return me.handled(me, event)
+            return self.handled(event)
         elif sig == farc.Signal.EXIT:
-            return me.handled(me, event)
+            return self.handled(event)
         elif sig == farc.Signal.d:
-            if me.foo:
-                me.foo = 0
-                return me.tran(me, AllTransitionsHsm._s1)
+            if self.foo:
+                self.foo = 0
+                return self.tran(AllTransitionsHsm._s1)
         elif sig == farc.Signal.g:
-            return me.tran(me, AllTransitionsHsm._s211)
+            return self.tran(AllTransitionsHsm._s211)
         elif sig == farc.Signal.h:
-            return me.tran(me, AllTransitionsHsm._s)
-        return me.super(me, AllTransitionsHsm._s1)
+            return self.tran(AllTransitionsHsm._s)
+        return self.super(AllTransitionsHsm._s1)
 
 
     @farc.Hsm.state
-    def _s2(me, event):
+    def _s2(self, event):
         sig = event.signal
         if sig == farc.Signal.INIT:
-            return me.tran(me, AllTransitionsHsm._s211)
+            return self.tran(AllTransitionsHsm._s211)
         elif sig == farc.Signal.ENTRY:
-            return me.handled(me, event)
+            return self.handled(event)
         elif sig == farc.Signal.EXIT:
-            return me.handled(me, event)
+            return self.handled(event)
         elif sig == farc.Signal.c:
-            return me.tran(me, AllTransitionsHsm._s1)
+            return self.tran(AllTransitionsHsm._s1)
         elif sig == farc.Signal.f:
-            return me.tran(me, AllTransitionsHsm._s11)
+            return self.tran(AllTransitionsHsm._s11)
         elif sig == farc.Signal.i:
-            if not me.foo:
-                me.foo = 1
-                return me.handled(me, event)
-        return me.super(me, AllTransitionsHsm._s)
+            if not self.foo:
+                self.foo = 1
+                return self.handled(event)
+        return self.super(AllTransitionsHsm._s)
 
 
     @farc.Hsm.state
-    def _s21(me, event):
+    def _s21(self, event):
         sig = event.signal
         if sig == farc.Signal.INIT:
-            return me.tran(me, AllTransitionsHsm._s211)
+            return self.tran(AllTransitionsHsm._s211)
         elif sig == farc.Signal.ENTRY:
-            return me.handled(me, event)
+            return self.handled(event)
         elif sig == farc.Signal.EXIT:
-            return me.handled(me, event)
+            return self.handled(event)
         elif sig == farc.Signal.a:
-            return me.tran(me, AllTransitionsHsm._s21)
+            return self.tran(AllTransitionsHsm._s21)
         elif sig == farc.Signal.b:
-            return me.tran(me, AllTransitionsHsm._s211)
+            return self.tran(AllTransitionsHsm._s211)
         elif sig == farc.Signal.g:
-            return me.tran(me, AllTransitionsHsm._s1)
-        return me.super(me, AllTransitionsHsm._s2)
+            return self.tran(AllTransitionsHsm._s1)
+        return self.super(AllTransitionsHsm._s2)
 
 
     @farc.Hsm.state
-    def _s211(me, event):
+    def _s211(self, event):
         sig = event.signal
         if sig == farc.Signal.ENTRY:
-            return me.handled(me, event)
+            return self.handled(event)
         elif sig == farc.Signal.EXIT:
-            return me.handled(me, event)
+            return self.handled(event)
         elif sig == farc.Signal.d:
-            return me.tran(me, AllTransitionsHsm._s21)
+            return self.tran(AllTransitionsHsm._s21)
         elif sig == farc.Signal.h:
-            return me.tran(me, AllTransitionsHsm._s)
-        return me.super(me, AllTransitionsHsm._s21)
+            return self.tran(AllTransitionsHsm._s)
+        return self.super(AllTransitionsHsm._s21)
 
 
     @farc.Hsm.state
-    def _exiting(me, event):
+    def _exiting(self, event):
         sig = event.signal
         if sig == farc.Signal.ENTRY:
-            me.running = False
+            self.running = False
             farc.Framework.stop()
-            return me.handled(me, event)
+            return self.handled(event)
         elif sig == farc.Signal.EXIT:
-            return me.handled(me, event)
+            return self.handled(event)
 
-        return me.super(me, me.top)
+        return self.super(self.top)
 
 
 class TestHsmTransitions(unittest.TestCase):
@@ -193,7 +193,7 @@ class TestHsmTransitions(unittest.TestCase):
             ("_exiting", "t") ) # this last input is irrelevant; test that we reached the exiting state
 
         for st,sig in trans_seq:
-            self.assertEqual(self.sm.state.__name__, st) # check the current state
+            self.assertEqual(self.sm._state.__name__, st) # check the current state
             event = farc.Event(getattr(farc.Signal, sig), None) # create event from the input signal
             self.sm.postFIFO(event)
 

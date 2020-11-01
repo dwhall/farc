@@ -21,22 +21,22 @@ v = ["one",2,3]
 
 class SimpleSM(farc.Ahsm):
     @farc.Hsm.state
-    def _initial(me, event):
-        return me.tran(me, SimpleSM.ready)
+    def _initial(self, event):
+        return self.tran(SimpleSM.ready)
 
 
     @farc.Hsm.state
-    def ready(me, event):
+    def ready(self, event):
         sig = event.signal
         if sig == farc.Signal.ENTRY:
-            return me.handled(me, event)
+            return self.handled(event)
         elif sig == farc.Signal.APPEND:
             event.value.append("four")
-            return me.handled(me, event)
+            return self.handled(event)
         elif sig == farc.Signal.EXIT:
-            return me.handled(me, event)
+            return self.handled(event)
 
-        return me.super(me, me.top)
+        return self.super(self.top)
 
 
 def async_test(f):

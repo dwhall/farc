@@ -15,13 +15,13 @@ class OnOffSwitch(farc.Ahsm):
     Refer https://statecharts.github.io/on-off-state-machine.html
     """
     @farc.Hsm.state
-    def _initial(me, event):
+    def _initial(self, event):
         logging.debug("OnOffSwitch _initial")
-        return me.tran(me, OnOffSwitch.off)
+        return self.tran(OnOffSwitch.off)
 
 
     @farc.Hsm.state
-    def off(me, event):
+    def off(self, event):
         """
         Actually this is a static method.
 
@@ -32,19 +32,19 @@ class OnOffSwitch(farc.Ahsm):
         #logging.debug("<off> in sig: %d", sig)
         if sig == farc.Signal.ENTRY:
             logging.debug("<off> enter")
-            return me.handled(me, event)
+            return self.handled(event)
         elif sig == farc.Signal.FLICK:
             logging.debug("<off> flick")
-            return me.tran(me, OnOffSwitch.on)
+            return self.tran(OnOffSwitch.on)
         elif sig == farc.Signal.EXIT:
             logging.debug("<off> exit")
-            return me.handled(me, event)
+            return self.handled(event)
 
-        return me.super(me, me.top)
+        return self.super(self.top)
 
 
     @farc.Hsm.state
-    def on(me, event):
+    def on(self, event):
         """
         Actually this is a static method.
 
@@ -54,15 +54,15 @@ class OnOffSwitch(farc.Ahsm):
         sig = event.signal
         if sig == farc.Signal.ENTRY:
             logging.debug("<on> enter - turn light on")
-            return me.handled(me, event)
+            return self.handled(event)
         elif sig == farc.Signal.FLICK:
             logging.debug("<on> flick")
-            return me.tran(me, OnOffSwitch.off)
+            return self.tran(OnOffSwitch.off)
         elif sig == farc.Signal.EXIT:
             logging.debug("<on> exit - turn light off ")
-            return me.handled(me, event)
+            return self.handled(event)
 
-        return me.super(me, me.top)
+        return self.super(self.top)
 
 
 def postFlickEvent(sw, event):

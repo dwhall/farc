@@ -38,74 +38,74 @@ class UdpServer:
 class UdpRelayAhsm(farc.Ahsm):
 
     @farc.Hsm.state
-    def _initial(me, event):
-        farc.Framework.subscribe("NET_ERR", me)
-        farc.Framework.subscribe("NET_RXD", me)
-        me.tmr = farc.TimeEvent("FIVE_COUNT")
+    def _initial(self, event):
+        farc.Framework.subscribe("NET_ERR", self)
+        farc.Framework.subscribe("NET_RXD", self)
+        self.tmr = farc.TimeEvent("FIVE_COUNT")
 
         loop = asyncio.get_event_loop()
         server = loop.create_datagram_endpoint(UdpServer, local_addr=("localhost", UDP_PORT))
-        me.transport, me.protocol = loop.run_until_complete(server)
-        return me.tran(me, UdpRelayAhsm._waiting)
+        self.transport, self.protocol = loop.run_until_complete(server)
+        return self.tran(UdpRelayAhsm._waiting)
 
 
     @farc.Hsm.state
-    def _waiting(me, event):
+    def _waiting(self, event):
         sig = event.signal
         if sig == farc.Signal.ENTRY:
             print("Awaiting a UDP datagram on port {0}.  Try: $ nc -u localhost {0}".format(UDP_PORT))
-            return me.handled(me, event)
+            return self.handled(event)
 
         elif sig == farc.Signal.NET_RXD:
-            me.latest_msg, me.latest_addr = event.value
-            print("RelayFrom(%s): %r" % (me.latest_addr, me.latest_msg.decode()))
-            return me.tran(me, UdpRelayAhsm._relaying)
+            self.latest_msg, self.latest_addr = event.value
+            print("RelayFrom(%s): %r" % (self.latest_addr, self.latest_msg.decode()))
+            return self.tran(UdpRelayAhsm._relaying)
 
         elif sig == farc.Signal.SIGTERM:
-            return me.tran(me, UdpRelayAhsm._exiting)
+            return self.tran(UdpRelayAhsm._exiting)
 
-        return me.super(me, me.top)
+        return self.super(self.top)
 
 
     @farc.Hsm.state
-    def _relaying(me, event):
+    def _relaying(self, event):
         sig = event.signal
         if sig == farc.Signal.ENTRY:
-            me.tmr.postEvery(me, 5.000)
-            return me.handled(me, event)
+            self.tmr.postEvery(self, 5.000)
+            return self.handled(event)
 
         elif sig == farc.Signal.NET_RXD:
-            me.latest_msg, me.latest_addr = event.value
-            print("RelayFrom(%s): %r" % (me.latest_addr, me.latest_msg.decode()))
-            return me.handled(me, event)
+            self.latest_msg, self.latest_addr = event.value
+            print("RelayFrom(%s): %r" % (self.latest_addr, self.latest_msg.decode()))
+            return self.handled(event)
 
         elif sig == farc.Signal.FIVE_COUNT:
-            s = "Latest: %r\n" % me.latest_msg.decode()
-            me.transport.sendto(s.encode(), me.latest_addr)
-            return me.handled(me, event)
+            s = "Latest: %r\n" % self.latest_msg.decode()
+            self.transport.sendto(s.encode(), self.latest_addr)
+            return self.handled(event)
 
         elif sig == farc.Signal.NET_ERR:
-            return me.tran(me, UdpRelayAhsm._waiting)
+            return self.tran(UdpRelayAhsm._waiting)
 
         elif sig == farc.Signal.SIGTERM:
-            me.tmr.disarm()
-            return me.tran(me, UdpRelayAhsm._exiting)
+            self.tmr.disarm()
+            return self.tran(UdpRelayAhsm._exiting)
 
         elif sig == farc.Signal.EXIT:
             print("Leaving timer event running so Ctrl+C will be handled on Windows")
-            return me.handled(me, event)
+            return self.handled(event)
 
-        return me.super(me, me.top)
+        return self.super(self.top)
 
 
     @farc.Hsm.state
-    def _exiting(me, event):
+    def _exiting(self, event):
         sig = event.signal
         if sig == farc.Signal.ENTRY:
             print("exiting")
-            me.transport.close()
-            return me.handled(me, event)
-        return me.super(me, me.top)
+            self.transport.close()
+            return self.handled(event)
+        return self.super(self.top)
 
 
     # Callbacks interact via messaging
