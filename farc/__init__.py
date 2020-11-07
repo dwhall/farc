@@ -170,7 +170,8 @@ class Hsm(object):
 
         # Farc differs from QP here in that we hardcode
         # the initial state to be "_initial"
-        self.initial_state = self._initial
+        assert hasattr(self, "_initial"), "All HSMs must have an _initial() state handler"
+        self._initial_state = self._initial
 
 
     def _initial(self, event):
@@ -233,10 +234,10 @@ class Hsm(object):
         """Act on the chain of initializations required starting from current.
         """
         t = current
-        while self.trig(t if t != self.top else self.initial_state, Signal.INIT) == Hsm.RET_TRAN:
-            # The state handles the INIT message and needs to make a transition. The
-            #  "top" state is special in that it does not handle INIT messages, so we
-            #  defer to self.initial_state in this case
+        while self.trig(t if t != self.top else self._initial_state, Signal.INIT) == Hsm.RET_TRAN:
+            # The state handles the INIT message and needs to make a transition.
+            # The "top" state is special in that it does not handle INIT messages,
+            # so we defer to self._initial_state in this case
             path = []  # Trace the path back to t via superstates
             while self._state != t:
                 path.append(self._state)
@@ -315,7 +316,7 @@ class Hsm(object):
         """
         # TODO: The initial state MUST transition to another state
         # The code that formerly did this was:
-        #    status = self.initial_state(self, event)
+        #    status = self._initial_state(self, event)
         #    assert status == Hsm.RET_TRAN
         # But the above code is commented out so an Ahsm's _initial()
         # isn't executed twice.
