@@ -5,7 +5,7 @@ with open("README.md", "r") as f:
 
 setuptools.setup(
     name="farc",
-    version="0.1.1",
+    version="0.2.0",
     author="Dean Hall",
     author_email="dwhall256@gmail.com",
     description="Framework for Asyncio/Actor/AHSM Run-to-completion Concurrency",

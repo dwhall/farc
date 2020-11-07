@@ -27,6 +27,16 @@ https://github.com/dwhall/farc
 
 ## Release History
 
+2020/11/07  0.2.0
+- BREAKS API: Removed initEvent argument from Ahsm.start()
+- BREAKS API: Renamed camel-case procedures with underscores
+- BREAKS API: Eliminated @staticmethod and use of "me"
+- BREAKS API: Removed VcdSpy (debug helper) class from default namespace
+- Serialize Event values using pickle.  This might lead to a runtime error for some.
+- call Framework.run() as soon as possible when an event is posted to AHSM (Max Peng).
+- Reimplement HSM algorithm and include hsm_test (Sze Tan)
+- Consolidated all files into `__init__.py`
+
 2019/05/15  0.1.1
 - Removed 'initialState' argument from farc.Hsm() constructor;
   framework now expects Hsm/Ahsm classes to have 'initial()' method.
