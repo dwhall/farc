@@ -230,10 +230,11 @@ class Hsm(object):
         return Hsm.RET_IGNORED # p. 165
 
 
-    def _perform_init_chain(self, current):
+    def _perform_init_chain(self, current, first_init):
         """Act on the chain of initializations required starting from current.
         """
         t = current
+        tran_count = 0
         while self.trig(t if t != self.top else self._initial_state, Signal.INIT) == Hsm.RET_TRAN:
             # The state handles the INIT message and needs to make a transition.
             # The "top" state is special in that it does not handle INIT messages,
@@ -251,6 +252,10 @@ class Hsm(object):
                 self.enter(s)
             # The target state has now to be checked to see if it responds to the INIT message
             t = path[-1]  # -1 because path was reversed
+            tran_count += 1
+
+        if first_init:
+            assert tran_count > 0, "The initial state MUST transition to another state"
         return t
 
 
@@ -308,20 +313,13 @@ class Hsm(object):
                                 self.enter(st)
 
 
-    def init(self, event = None):
+    def init(self,):
         """Transitions to the initial state.  Follows any INIT transitions
         from the inital state and performs ENTRY actions as it proceeds.
         Use this to pass any parameters to initialize the state machine.
         p. 172
         """
-        # TODO: The initial state MUST transition to another state
-        # The code that formerly did this was:
-        #    status = self._initial_state(self, event)
-        #    assert status == Hsm.RET_TRAN
-        # But the above code is commented out so an Ahsm's _initial()
-        # isn't executed twice.
-
-        self._state = self._perform_init_chain(Hsm.top)
+        self._state = self._perform_init_chain(Hsm.top, True)
 
 
     def dispatch(self, event):
@@ -361,7 +359,7 @@ class Hsm(object):
             # Transition to t through the HSM
             self._perform_transition(s, t)
             # Do initializations starting at t
-            t = self._perform_init_chain(t)
+            t = self._perform_init_chain(t, False)
 
         # Restore the state
         self._state = t
@@ -668,12 +666,12 @@ class Ahsm(Hsm):
     Adds a priority, message queue and methods to work with the queue.
     """
 
-    def start(self, priority, initEvent=None):
+    def start(self, priority):
         # must set the priority before Framework.add() which uses the priority
         self.priority = priority
         Framework.add(self)
         self.mq = collections.deque()
-        self.init(initEvent)
+        self.init()
         Framework.run_to_completion()
 
     def post_lifo(self, evt):
