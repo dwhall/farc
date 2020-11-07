@@ -18,7 +18,7 @@ class Three(farc.Ahsm):
         sig = event.signal
         if sig == farc.Signal.ENTRY:
             print("three enter")
-            self.te.postEvery(self, 3)
+            self.te.post_every(self, 3)
             return self.handled(event)
 
         elif sig == farc.Signal.TICK3:
@@ -47,7 +47,7 @@ class Five(farc.Ahsm):
         sig = event.signal
         if sig == farc.Signal.ENTRY:
             print("five enter")
-            self.te.postEvery(self, 5)
+            self.te.post_every(self, 5)
             return self.handled(event)
 
         elif sig == farc.Signal.TICK5:

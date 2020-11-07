@@ -178,5 +178,5 @@ if __name__ == "__main__":
         tst_ahsm.start(0)
         for sig in seq:
             event = farc.Event(getattr(farc.Signal, sig), None)
-            tst_ahsm.postFIFO(event)
+            tst_ahsm.post_fifo(event)
         farc.run_forever()

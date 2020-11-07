@@ -22,7 +22,7 @@ class Countdown(farc.Ahsm):
         sig = event.signal
         if sig == farc.Signal.ENTRY:
             print("_counting")
-            self.te.postIn(self, 1.0)
+            self.te.post_in(self, 1.0)
             return self.handled(event)
 
         elif sig == farc.Signal.TIME_TICK:
@@ -32,7 +32,7 @@ class Countdown(farc.Ahsm):
                 return self.tran(Countdown._exiting)
             else:
                 self.count -= 1
-                self.te.postIn(self, 1.0)
+                self.te.post_in(self, 1.0)
                 return self.handled(event)
 
         return self.super(self.top)

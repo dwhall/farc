@@ -71,7 +71,7 @@ class UdpRelayAhsm(farc.Ahsm):
     def _relaying(self, event):
         sig = event.signal
         if sig == farc.Signal.ENTRY:
-            self.tmr.postEvery(self, 5.000)
+            self.tmr.post_every(self, 5.000)
             return self.handled(event)
 
         elif sig == farc.Signal.NET_RXD:

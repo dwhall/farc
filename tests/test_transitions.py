@@ -195,7 +195,7 @@ class TestHsmTransitions(unittest.TestCase):
         for st,sig in trans_seq:
             self.assertEqual(self.sm._state.__name__, st) # check the current state
             event = farc.Event(getattr(farc.Signal, sig), None) # create event from the input signal
-            self.sm.postFIFO(event)
+            self.sm.post_fifo(event)
 
 
 if __name__ == '__main__':

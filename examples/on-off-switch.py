@@ -67,7 +67,7 @@ class OnOffSwitch(farc.Ahsm):
 
 def postFlickEvent(sw, event):
     logging.debug("post FLICK event")
-    sw.postFIFO(event)
+    sw.post_fifo(event)
 
 
 def mainFunction():

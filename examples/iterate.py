@@ -25,7 +25,7 @@ class Iterate(farc.Ahsm):
         if sig == farc.Signal.ENTRY:
             print("_iterating")
             self.count = 10
-            self.postFIFO(self.iter_evt)
+            self.post_fifo(self.iter_evt)
             return self.handled(event)
 
         elif sig == farc.Signal.ITERATE:
@@ -36,7 +36,7 @@ class Iterate(farc.Ahsm):
             else:
                 # do work
                 self.count -= 1
-                self.postFIFO(self.iter_evt)
+                self.post_fifo(self.iter_evt)
                 return self.handled(event)
 
         return self.super(self.top)

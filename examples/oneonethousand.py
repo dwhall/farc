@@ -20,8 +20,8 @@ class Mississippi(farc.Ahsm):
         if sig == farc.Signal.ENTRY:
             print("_counting enter")
             self._count = 0
-            self.teCount.postEvery(self, 0.001)
-            self.tePrint.postEvery(self, 1.000)
+            self.teCount.post_every(self, 0.001)
+            self.tePrint.post_every(self, 1.000)
             return self.handled(event)
 
         elif sig == farc.Signal.COUNT:

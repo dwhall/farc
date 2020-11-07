@@ -114,7 +114,7 @@ class Philo(farc.Ahsm):
     def _thinking(self, event):
         sig = event.signal
         if sig == farc.Signal.ENTRY:
-            self.timeEvt.postIn(self, THINK_TIME())
+            self.timeEvt.post_in(self, THINK_TIME())
             status = self.handled(event)
 
         elif sig == farc.Signal.TIMEOUT:
@@ -154,7 +154,7 @@ class Philo(farc.Ahsm):
     def _eating(self, event):
         sig = event.signal
         if sig == farc.Signal.ENTRY:
-            self.timeEvt.postIn(self, EAT_TIME())
+            self.timeEvt.post_in(self, EAT_TIME())
             status = self.handled(event)
 
         elif sig == farc.Signal.EXIT:

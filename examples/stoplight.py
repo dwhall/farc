@@ -11,7 +11,7 @@ class Stoplight(farc.Ahsm):
         print("Stoplight _initial")
 
         te = farc.TimeEvent("TIME_TICK")
-        te.postEvery(self, 2.0)
+        te.post_every(self, 2.0)
 
         return self.tran(Stoplight._red)
 

@@ -62,7 +62,7 @@ class TestSerialization(unittest.TestCase):
 
     @async_test
     def test_event_value_modification(self,):
-        self.sm.postFIFO(self.event)
+        self.sm.post_fifo(self.event)
         farc.Framework.stop()
         self.assertEqual(v, ["one",2,3])
 
