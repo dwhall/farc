@@ -8,7 +8,6 @@ dpp.py - the Dining Philosopher's Problem
          [https://newcontinuum.dl.sourceforge.net/project/qpc/doc/PSiCC2.pdf]
 """
 
-import asyncio
 import random
 
 import farc
