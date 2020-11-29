@@ -468,7 +468,8 @@ class Framework(object):
         The event will fire its signal (to the TimeEvent's target Ahsm)
         at the given absolute time (_event_loop.time()).
         """
-        assert tm_event not in Framework._time_events.values()
+        assert tm_event not in Framework._time_events.values(), \
+            "A TimeEvent must not be armed more than once."
         Framework._insort_time_event(tm_event, abs_time)
 
 
@@ -578,8 +579,8 @@ class Framework(object):
         """Makes the framework aware of the given Ahsm.
         """
         Framework._ahsm_registry.append(act)
-        assert act.priority not in Framework._priority_dict, (
-                "Priority MUST be unique")
+        assert act.priority not in Framework._priority_dict, \
+            "Priority MUST be unique"
         Framework._priority_dict[act.priority] = act
         Spy.on_framework_add(act)
 
@@ -664,9 +665,14 @@ def run_forever():
 class Ahsm(Hsm):
     """An Augmented Hierarchical State Machine (AHSM); a.k.a. ActiveObject/AO.
     Adds a priority, message queue and methods to work with the queue.
+    A lower number means higher priority.
     """
 
     def start(self, priority):
+        """Adds this Ahsm to the Framework, creates the msg queue
+        and performs the state machine's initial transition.
+        A lower number means higher priority.
+        """
         # must set the priority before Framework.add() which uses the priority
         self.priority = priority
         Framework.add(self)
@@ -675,10 +681,16 @@ class Ahsm(Hsm):
         Framework.run_to_completion()
 
     def post_lifo(self, evt):
+        """Adds the event in LIFO order to this Ahsm's queue.
+        Schedules the Framework to run-to-completion.
+        """
         self.mq.append(evt)
         Framework.run_to_completion()
 
     def post_fifo(self, evt):
+        """Adds the event in FIFO order to this Ahsm's queue.
+        Schedules the Framework to run-to-completion.
+        """
         self.mq.appendleft(evt)
         Framework.run_to_completion()
 

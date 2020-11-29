@@ -15,16 +15,20 @@ setuptools.setup(
     packages=setuptools.find_packages(),
     classifiers=[
         "License :: OSI Approved :: MIT License",
-        "Operating System :: OS Independent",
-        "Topic :: Software Development :: Libraries :: Application Frameworks",
-        'Intended Audience :: Developers',
-        'Development Status :: 3 - Alpha',
 
-        # Python 3.4 (or later) because asyncio is required
+        # Python 3.4 or later because asyncio is required
         "Programming Language :: Python :: 3.4",
         "Programming Language :: Python :: 3.5",
         "Programming Language :: Python :: 3.6",
         "Programming Language :: Python :: 3.7",
         "Programming Language :: Python :: 3.8",
+
+        # Alpha status because there is API breakage between releases
+        # without changing the major version number
+        "Development Status :: 3 - Alpha",
+
+        "Operating System :: OS Independent",
+        "Topic :: Software Development :: Libraries :: Application Frameworks",
+        "Intended Audience :: Developers",
     ],
 )

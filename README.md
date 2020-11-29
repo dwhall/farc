@@ -6,6 +6,7 @@ written in Python3.  In other words, a cheap knock-off of
 [This book](https://newcontinuum.dl.sourceforge.net/project/qpc/doc/PSiCC2.pdf)
 describes QP and how to program [statecharts](https://statecharts.github.io)(a.k.a. hierarchical state machines).
 
+This package is 100% Python with no required external dependencies.
 This framework has fewer than 1000 LOC.  It allows the programmer to create
 highly-concurrent programs by using a message-passing system and
 run-to-completion message handlers within a state-machine architecture.
