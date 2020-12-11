@@ -84,6 +84,13 @@ class Signal(object):
             return sigid
 
 
+    @staticmethod
+    def to_str(sigid):
+        """Returns the signame:str for the given sigid:int
+        """
+        return Signal._lookup[sigid]
+
+
     def __getattr__(self, signame):
         assert type(signame) is str
         return Signal._registry[signame]
