@@ -554,7 +554,7 @@ class Framework(object):
         in the list of active time events.
         """
         assert expiration in Framework._time_events.keys(), (
-            "Exp:%d _time_events.keys():%s" %
+            "Exp:%f _time_events.keys():%s" %
             (expiration, Framework._time_events.keys()))
 
         # Remove this expired TimeEvent from the active list
