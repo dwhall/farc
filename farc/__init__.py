@@ -132,6 +132,12 @@ class Event(object):
         # serialize the value
         self._value = pickle.dumps(val)
 
+    def __eq__(self, other):
+        """Returns True if this and the other event are equivalent."""
+        if isinstance(other, Event):
+            return self.signal == other.signal and self.value == other.value
+        return False
+
     @property
     def value(self,):
         return pickle.loads(self._value)
