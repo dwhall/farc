@@ -30,5 +30,6 @@ setuptools.setup(
         "Operating System :: OS Independent",
         "Topic :: Software Development :: Libraries :: Application Frameworks",
         "Intended Audience :: Developers",
+        'Framework :: AsyncIO',
     ],
 )
