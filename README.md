@@ -2,7 +2,7 @@
 
 Framework for Asyncio/Actor/AHSM Run-to-completion Concurrency
 written in Python3.  In other words, a cheap knock-off of
-[QP](www.state-machine.com) that uses Python3 coroutines.
+[QP](https://www.state-machine.com) that uses Python3 coroutines.
 [This book](https://newcontinuum.dl.sourceforge.net/project/qpc/doc/PSiCC2.pdf)
 describes QP and how to program [statecharts](https://statecharts.github.io)(a.k.a. hierarchical state machines).
 
