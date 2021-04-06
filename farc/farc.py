@@ -499,28 +499,32 @@ class Framework(object):
         now = Framework._event_loop.time()
         if expiration < now:
             tm_event.act.post_fifo(tm_event)
-            # TODO: if periodic, need to schedule next?
+            # If periodic, schedule an adjusted next interval
+            if tm_event.interval > 0:
+                Framework._insort_time_event(tm_event,
+                        now + tm_event.interval)
 
-        # If an event already occupies this expiration time,
-        # increase this event's expiration by the smallest measurable amount
-        while expiration in Framework._time_events.keys():
-            m, e = math.frexp(expiration)
-            expiration = (m + sys.float_info.epsilon) * 2**e
-        Framework._time_events[expiration] = tm_event
-
-        # If this is the only active TimeEvent, schedule its callback
-        if len(Framework._time_events) == 1:
-            Framework._tm_event_handle = Framework._event_loop.call_at(
-                expiration, Framework.time_event_callback, tm_event, expiration)
-
-        # If there are other TimeEvents,
-        # check if this one should replace the scheduled one
         else:
-            if expiration < min(Framework._time_events.keys()):
-                Framework._tm_event_handle.cancel()
+            # If an event already occupies this expiration time, increase
+            # this event's expiration by the smallest measurable amount
+            while expiration in Framework._time_events.keys():
+                m, e = math.frexp(expiration)
+                expiration = (m + sys.float_info.epsilon) * 2**e
+            Framework._time_events[expiration] = tm_event
+
+            # If this is the only active TimeEvent, schedule its callback
+            if len(Framework._time_events) == 1:
                 Framework._tm_event_handle = Framework._event_loop.call_at(
-                    expiration, Framework.time_event_callback, tm_event,
-                    expiration)
+                    expiration, Framework.time_event_callback, tm_event, expiration)
+
+            # If there are other TimeEvents,
+            # check if this one should replace the scheduled one
+            else:
+                if expiration < min(Framework._time_events.keys()):
+                    Framework._tm_event_handle.cancel()
+                    Framework._tm_event_handle = Framework._event_loop.call_at(
+                        expiration, Framework.time_event_callback, tm_event,
+                        expiration)
 
 
     @staticmethod
