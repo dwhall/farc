@@ -184,7 +184,8 @@ class Hsm(object):
 
         # Farc differs from QP here in that we hardcode
         # the initial state to be "_initial"
-        assert hasattr(self, "_initial"), "All HSMs must have an _initial() state handler"
+        assert hasattr(self, "_initial"), \
+                "All HSMs must have an _initial() state handler"
         self._initial_state = self._initial
 
 
@@ -347,8 +348,9 @@ class Hsm(object):
         # Save the current state
         t = self._state
 
-        # Proceed to superstates if event is not handled, we wish to find the superstate
-        #  (if any) that does handle the event and to record the path to that state
+        # Proceed to superstates if event is not handled,
+        # we wish to find the superstate #  (if any) that does
+        # handle the event and to record the path to that state
         exit_path = []
         r = Hsm.RET_SUPER
         while r == Hsm.RET_SUPER:
@@ -356,8 +358,8 @@ class Hsm(object):
             exit_path.append(s)
             Spy.on_hsm_dispatch_pre(s)
             r = s(self, event)    # invoke state handler
-        # We leave the while loop with s at the state which was able to respond
-        #  to the event, or to Hsm.top if none did
+        # We leave the while loop with s at the state which was able to
+        # respond to the event, or to Hsm.top if none did
         Spy.on_hsm_dispatch_post(exit_path)
 
         # If the state handler for s requests a transition
@@ -500,20 +502,25 @@ class Framework(object):
         now = Framework._event_loop.time()
         if expiration <= now:
             tm_event.act.post_fifo(tm_event)
-            # If periodic, schedule an adjusted next interval
-            if tm_event.interval > 0:
-                Framework._insort_time_event(tm_event, now + tm_event.interval)
+            if tm_event.is_periodic():
+                # Adjust expiration if we're missing deadlines
+                if expiration + tm_event.interval < now:
+                    expiration = now
+                Framework._insort_time_event(
+                        tm_event,
+                        expiration + tm_event.interval)
 
         else:
 
-            # If this event is to replace the scheduled event, cancel the callback
+            # If the new event is the soonest, cancel the callback
             if (len(Framework._time_events) > 0 and
                     expiration < Framework._time_event_times[0]):
                 if Framework._tm_event_handle:
                     Framework._tm_event_handle.cancel()
                     Framework._tm_event_handle = None
 
-            index = bisect.bisect_right(Framework._time_event_times, expiration)
+            index = bisect.bisect_right(
+                    Framework._time_event_times, expiration)
             Framework._time_event_times.insert(index, expiration)
             Framework._time_events.insert(index, tm_event)
 
@@ -544,7 +551,7 @@ class Framework(object):
             del Framework._time_events[idx]
             del Framework._time_event_times[idx]
 
-            # If the event being removed is the next scheduled event,
+            # If the removed event was the soonest,
             # cancel the callback and reschedule any other events
             if idx == 0:
                 if Framework._tm_event_handle:
@@ -569,10 +576,9 @@ class Framework(object):
         del Framework._time_event_times[0]
         Framework._tm_event_handle = None
 
-        # Set a periodic time event's next expiration
-        if tm_event.interval > 0:
-            Framework._insort_time_event(tm_event,
-                    expiration + tm_event.interval)
+        if tm_event.is_periodic():
+            Framework._insort_time_event(
+                    tm_event, expiration + tm_event.interval)
 
         # Post the event to the target Ahsm
         tm_event.act.post_fifo(tm_event)
@@ -707,16 +713,21 @@ class Ahsm(Hsm):
 
 
 class TimeEvent(object):
-    """TimeEvent is a composite class that contains an Event.
+    """TimeEvent is a composite class that contains Event-like fields.
     A TimeEvent is created by the application and added to the Framework.
-    The Framework then emits the event after the given delay.
+    The Framework then posts the event to the HSM after the given delay.
     A one-shot TimeEvent is created by calling either post_at() or post_in().
     A periodic TimeEvent is created by calling the post_every() method.
     """
     def __init__(self, signame):
-        assert type(signame) == str
         self.signal = Signal.register(signame)
         self.value = None
+
+
+    def is_periodic(self):
+        """Returns True if this TimeEvent is periodic.
+        """
+        return self.interval > 0
 
 
     def post_at(self, act, abs_time):
@@ -751,4 +762,5 @@ class TimeEvent(object):
         """Removes this TimeEvent from the Framework's active time events.
         """
         self.act = None
+        self.interval = 0
         Framework.remove_time_event(self)
