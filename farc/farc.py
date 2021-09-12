@@ -6,7 +6,7 @@ import signal
 from functools import wraps
 
 
-class Spy(object):
+class Spy():
     """Spy is the debugging system for farc.
     farc contains a handful of Spy.on_*() methods
     placed at useful locations in the framework.
@@ -49,7 +49,7 @@ class Spy(object):
 Spy = Spy()
 
 
-class Signal(object):
+class Signal():
     """An asynchronous stimulus that triggers reactions.
     A unique identifier that, along with a value, specifies an Event.
     p. 154
@@ -112,7 +112,7 @@ Signal.register("SIGINT")  # (i.e. Ctrl+C)
 Signal.register("SIGTERM") # (i.e. kill <pid>)
 
 
-class Event(object):
+class Event():
     """Events are a coupling of a signal and a value.
     Events are passed from one AHSM to another.
     Signals are defined in each AHSM's source code by name,
@@ -155,7 +155,7 @@ Event.SIGTERM = Event(Signal.SIGTERM, None) # (i.e. kill <pid>)
 Event.reserved = (Event.EMPTY, Event.ENTRY, Event.EXIT, Event.INIT)
 
 
-class Hsm(object):
+class Hsm():
     """A Hierarchical State Machine (HSM).
     Full support for hierarchical state nesting.
     Guaranteed entry/exit action execution on arbitrary state transitions.
@@ -379,7 +379,7 @@ class Hsm(object):
         self._state = t
 
 
-class Framework(object):
+class Framework():
     """Framework is a composite class that holds:
     - the asyncio event loop
     - the registry of AHSMs
@@ -710,7 +710,7 @@ class Ahsm(Hsm):
         return len(self.mq) > 0
 
 
-class TimeEvent(object):
+class TimeEvent():
     """TimeEvent is a composite class that contains Event-like fields.
     A TimeEvent is created by the application and added to the Framework.
     The Framework then posts the event to the HSM after the given delay.
