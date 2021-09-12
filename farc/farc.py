@@ -1,3 +1,5 @@
+# Copyright 2016, Dean Hall.  See LICENSE for details.
+
 import asyncio
 import bisect
 import collections
@@ -27,7 +29,6 @@ class Spy():
         Spy._actv_cls = spy_cls
         spy_cls.init()
 
-
     def __getattr__(*args):
         """Returns
         1) the enable_spy static method if requested by name, or
@@ -44,7 +45,7 @@ class Spy():
 # Singleton pattern:
 # Turn Spy into an instance of itself so __getattribute__ works
 # on anyone who calls "import Spy; Spy.foo()"
-# This  prevents Spy() from creating a new instance
+# This prevents Spy() from creating a new instance
 # and gives everyone who calls "import Spy" the same object
 Spy = Spy()
 
@@ -58,13 +59,11 @@ class Signal():
     _registry = {}  # signame:str to sigid:int
     _lookup = []    # sigid:int to signame:str
 
-
     @staticmethod
     def exists(signame):
         """Returns True if signame is in the Signal registry.
         """
         return signame in Signal._registry
-
 
     @staticmethod
     def register(signame):
@@ -82,13 +81,11 @@ class Signal():
             Spy.on_signal_register(signame, sigid)
             return sigid
 
-
     @staticmethod
     def to_str(sigid):
         """Returns the signame:str for the given sigid:int
         """
         return Signal._lookup[sigid]
-
 
     def __getattr__(self, signame):
         assert type(signame) is str
@@ -100,16 +97,15 @@ class Signal():
 # This also prevents Signal() from creating a new instance.
 Signal = Signal()
 
-
 # Register the reserved (system) signals
-Signal.register("EMPTY") # 0
-Signal.register("ENTRY") # 1
-Signal.register("EXIT")  # 2
-Signal.register("INIT")  # 3
+Signal.register("EMPTY")    # 0
+Signal.register("ENTRY")    # 1
+Signal.register("EXIT")     # 2
+Signal.register("INIT")     # 3
 
 # Signals that mirror POSIX signals
-Signal.register("SIGINT")  # (i.e. Ctrl+C)
-Signal.register("SIGTERM") # (i.e. kill <pid>)
+Signal.register("SIGINT")   # (i.e. Ctrl+C)
+Signal.register("SIGTERM")  # (i.e. kill <pid>)
 
 
 class Event():
@@ -141,6 +137,7 @@ class Event():
     def value(self,):
         return pickle.loads(self._value)
 
+
 # Instantiate the reserved (system) events
 Event.EMPTY = Event(Signal.EMPTY, None)
 Event.ENTRY = Event(Signal.ENTRY, None)
@@ -148,8 +145,8 @@ Event.EXIT = Event(Signal.EXIT, None)
 Event.INIT = Event(Signal.INIT, None)
 
 # Events for POSIX signals
-Event.SIGINT = Event(Signal.SIGINT, None)   # (i.e. Ctrl+C)
-Event.SIGTERM = Event(Signal.SIGTERM, None) # (i.e. kill <pid>)
+Event.SIGINT = Event(Signal.SIGINT, None)       # (i.e. Ctrl+C)
+Event.SIGTERM = Event(Signal.SIGTERM, None)     # (i.e. kill <pid>)
 
 # The order of this tuple MUST match their respective signals
 Event.reserved = (Event.EMPTY, Event.ENTRY, Event.EXIT, Event.INIT)
@@ -169,7 +166,6 @@ class Hsm():
     RET_TRAN = 2
     RET_SUPER = 3
 
-
     def __init__(self,):
         """Sets this Hsm's current state to Hsm.top(), the default state
         and stores the given initial state.
@@ -186,13 +182,11 @@ class Hsm():
                 "All HSMs must have an _initial() state handler"
         self._initial_state = self._initial
 
-
     def _initial(self, event):
         """Raises a NotImplementedError to force the derived class
         to implement its own initial state.
         """
         raise NotImplementedError
-
 
     def state(func):
         """A decorator that identifies which methods are states.
@@ -240,15 +234,15 @@ class Hsm():
             return Hsm.RET_HANDLED
 
         # All other events are quietly ignored
-        return Hsm.RET_IGNORED # p. 165
-
+        return Hsm.RET_IGNORED  # p. 165
 
     def _perform_init_chain(self, current, first_init):
         """Act on the chain of initializations required starting from current.
         """
         t = current
         tran_count = 0
-        while self.trig(t if t != self.top else self._initial_state, Signal.INIT) == Hsm.RET_TRAN:
+        while self.trig(t if t != self.top else self._initial_state,
+                        Signal.INIT) == Hsm.RET_TRAN:
             # The state handles the INIT message and needs to make a transition.
             # The "top" state is special in that it does not handle INIT messages,
             # so we defer to self._initial_state in this case
@@ -270,7 +264,6 @@ class Hsm():
         if first_init:
             assert tran_count > 0, "The initial state MUST transition to another state"
         return t
-
 
     def _perform_transition(self, source, target):
         # Handle the state transition from source to target in the HSM.
@@ -325,7 +318,6 @@ class Hsm():
                             for st in reversed(path[:path.index(t)]):
                                 self.enter(st)
 
-
     def init(self,):
         """Transitions to the initial state.  Follows any INIT transitions
         from the inital state and performs ENTRY actions as it proceeds.
@@ -333,7 +325,6 @@ class Hsm():
         p. 172
         """
         self._state = self._perform_init_chain(Hsm.top, True)
-
 
     def dispatch(self, event):
         """Dispatches the given event to this Hsm.
@@ -421,7 +412,6 @@ class Framework():
     # signal.  An Ahsm may subscribe to a signal at any time during runtime.
     _subscriber_table = {}
 
-
     @staticmethod
     def post(event, act):
         """Posts the event to the given Ahsm's event queue.
@@ -429,7 +419,6 @@ class Framework():
         """
         assert isinstance(act, Ahsm)
         act.post_fifo(event)
-
 
     @staticmethod
     def post_by_name(event, act_name):
@@ -443,7 +432,6 @@ class Framework():
             if act.__class__.__name__ == act_name:
                 act.post_fifo(event)
 
-
     @staticmethod
     def publish(event):
         """Posts the event to the message queue of every Ahsm
@@ -453,7 +441,6 @@ class Framework():
             for act in Framework._subscriber_table[event.signal]:
                 act.post_fifo(event)
         Framework.run_to_completion()
-
 
     @staticmethod
     def subscribe(signame, act):
@@ -467,7 +454,6 @@ class Framework():
             Framework._subscriber_table[sigid] = []
         Framework._subscriber_table[sigid].append(act)
 
-
     @staticmethod
     def add_time_event(tm_event, delta):
         """Adds the TimeEvent to the list of time events in the Framework.
@@ -476,7 +462,6 @@ class Framework():
         """
         expiration = Framework._event_loop.time() + delta
         Framework.add_time_event_at(tm_event, expiration)
-
 
     @staticmethod
     def add_time_event_at(tm_event, abs_time):
@@ -487,7 +472,6 @@ class Framework():
         assert tm_event not in Framework._time_events, \
             "A TimeEvent must not be armed more than once."
         Framework._insort_time_event(tm_event, abs_time)
-
 
     @staticmethod
     def _insort_time_event(tm_event, expiration):
@@ -504,27 +488,24 @@ class Framework():
                 # Adjust expiration if we're missing deadlines
                 if expiration + tm_event.interval < now:
                     expiration = now
-                Framework._insort_time_event(
-                        tm_event,
-                        expiration + tm_event.interval)
+                Framework._insort_time_event(tm_event,
+                                             expiration + tm_event.interval)
 
         else:
-
             # If the new event is the soonest, cancel the callback
-            if (len(Framework._time_events) > 0 and
-                    expiration < Framework._time_event_times[0]):
+            if (len(Framework._time_events) > 0
+                    and expiration < Framework._time_event_times[0]):
                 if Framework._tm_event_handle:
                     Framework._tm_event_handle.cancel()
                     Framework._tm_event_handle = None
 
-            index = bisect.bisect_right(
-                    Framework._time_event_times, expiration)
+            index = bisect.bisect_right(Framework._time_event_times,
+                                        expiration)
             Framework._time_event_times.insert(index, expiration)
             Framework._time_events.insert(index, tm_event)
 
             if Framework._tm_event_handle is None:
                 Framework._reschedule_time_events()
-
 
     @staticmethod
     def _reschedule_time_events():
@@ -532,11 +513,10 @@ class Framework():
             next_expiration = Framework._time_event_times[0]
             next_event = Framework._time_events[0]
             Framework._tm_event_handle = Framework._event_loop.call_at(
-                    next_expiration,
-                    Framework.time_event_callback,
-                    next_event,
-                    next_expiration)
-
+                next_expiration,
+                Framework.time_event_callback,
+                next_event,
+                next_expiration)
 
     @staticmethod
     def remove_time_event(tm_event):
@@ -558,7 +538,6 @@ class Framework():
 
                 Framework._reschedule_time_events()
 
-
     @staticmethod
     def time_event_callback(tm_event, expiration):
         """The callback function for all TimeEvents.
@@ -575,13 +554,12 @@ class Framework():
         Framework._tm_event_handle = None
 
         if tm_event.is_periodic():
-            Framework._insort_time_event(
-                    tm_event, expiration + tm_event.interval)
+            Framework._insort_time_event(tm_event,
+                                         expiration + tm_event.interval)
 
         # Post the event to the target Ahsm
         tm_event.act.post_fifo(tm_event)
         Framework.run_to_completion()
-
 
     @staticmethod
     def add(act):
@@ -589,17 +567,16 @@ class Framework():
         """
         Framework._ahsm_registry.append(act)
         assert act.priority not in Framework._priority_dict, \
-            "Priority MUST be unique"
+               "Priority MUST be unique"
         Framework._priority_dict[act.priority] = act
         Spy.on_framework_add(act)
-
 
     @staticmethod
     def run():
         """Dispatches an event to the highest priority Ahsm
         until all event queues are empty (i.e. Run To Completion).
         """
-        getPriority = lambda x : x.priority
+        getPriority = lambda x: x.priority
 
         while True:
             allQueuesEmpty = True
@@ -613,11 +590,9 @@ class Framework():
             if allQueuesEmpty:
                 return
 
-
     @staticmethod
     def run_to_completion():
         Framework._event_loop.call_soon_threadsafe(Framework.run)
-
 
     @staticmethod
     def stop():
@@ -638,7 +613,6 @@ class Framework():
         Framework._event_loop.stop()
         Spy.on_framework_stop()
 
-
     @staticmethod
     def print_info():
         """Prints the name and current state
@@ -647,7 +621,6 @@ class Framework():
         """
         for act in Framework._ahsm_registry:
             print(act.__class__.__name__, act.state.__name__)
-
 
     # Bind a useful set of POSIX signals to the handler
     # (ignore a NotImplementedError on Windows)
@@ -721,12 +694,10 @@ class TimeEvent():
         self.signal = Signal.register(signame)
         self.value = None
 
-
     def is_periodic(self):
         """Returns True if this TimeEvent is periodic.
         """
         return self.interval > 0
-
 
     def post_at(self, act, abs_time):
         """Posts this TimeEvent to the given Ahsm at a specified time.
@@ -736,7 +707,6 @@ class TimeEvent():
         self.interval = 0
         Framework.add_time_event_at(self, abs_time)
 
-
     def post_in(self, act, delta):
         """Posts this TimeEvent to the given Ahsm after the time delta.
         """
@@ -744,7 +714,6 @@ class TimeEvent():
         self.act = act
         self.interval = 0
         Framework.add_time_event(self, delta)
-
 
     def post_every(self, act, delta):
         """Posts this TimeEvent to the given Ahsm after the time delta
@@ -754,7 +723,6 @@ class TimeEvent():
         self.act = act
         self.interval = delta
         Framework.add_time_event(self, delta)
-
 
     def disarm(self):
         """Removes this TimeEvent from the Framework's active time events.
