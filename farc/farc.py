@@ -178,8 +178,8 @@ class Hsm():
 
         # Farc differs from QP here in that we hardcode
         # the initial state to be "_initial"
-        assert hasattr(self, "_initial"), \
-                "All HSMs must have an _initial() state handler"
+        assert self._initial is not Hsm._initial, \
+               "All HSMs must have an _initial() state handler"
         self._initial_state = self._initial
 
     def _initial(self, event):
