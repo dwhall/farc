@@ -702,7 +702,7 @@ class TimeEvent():
     def post_at(self, act, abs_time):
         """Posts this TimeEvent to the given Ahsm at a specified time.
         """
-        assert issubclass(type(act), Ahsm)
+        assert isinstance(act, Ahsm)
         self.act = act
         self.interval = 0
         Framework.add_time_event_at(self, abs_time)
@@ -710,7 +710,7 @@ class TimeEvent():
     def post_in(self, act, delta):
         """Posts this TimeEvent to the given Ahsm after the time delta.
         """
-        assert issubclass(type(act), Ahsm)
+        assert isinstance(act, Ahsm)
         self.act = act
         self.interval = 0
         Framework.add_time_event(self, delta)
@@ -719,7 +719,7 @@ class TimeEvent():
         """Posts this TimeEvent to the given Ahsm after the time delta
         and every time delta thereafter until disarmed.
         """
-        assert issubclass(type(act), Ahsm)
+        assert isinstance(act, Ahsm)
         self.act = act
         self.interval = delta
         Framework.add_time_event(self, delta)
