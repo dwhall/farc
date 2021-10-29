@@ -61,8 +61,7 @@ class Signal():
 
     @staticmethod
     def exists(signame):
-        """Returns True if signame is in the Signal registry.
-        """
+        """Returns True if signame is in the Signal registry."""
         return signame in Signal._registry
 
     @staticmethod
@@ -73,18 +72,17 @@ class Signal():
         assert type(signame) is str
         if signame in Signal._registry:
             # TODO: emit warning that signal is already registered
-            return Signal._registry[signame]
+            sigid = Signal._registry[signame]
         else:
             sigid = len(Signal._lookup)
             Signal._registry[signame] = sigid
             Signal._lookup.append(signame)
             Spy.on_signal_register(signame, sigid)
-            return sigid
+        return sigid
 
     @staticmethod
     def to_str(sigid):
-        """Returns the signame:str for the given sigid:int
-        """
+        """Returns the signame:str for the given sigid:int."""
         return Signal._lookup[sigid]
 
     def __getattr__(self, signame):
@@ -134,7 +132,7 @@ class Event():
         return False
 
     @property
-    def value(self,):
+    def value(self):
         return pickle.loads(self._value)
 
 
@@ -166,7 +164,7 @@ class Hsm():
     RET_TRAN = 2
     RET_SUPER = 3
 
-    def __init__(self,):
+    def __init__(self):
         """Sets this Hsm's current state to Hsm.top(), the default state
         and stores the given initial state.
         """
@@ -205,15 +203,13 @@ class Hsm():
         setattr(func_wrap, "farc_state", True)
         return staticmethod(func_wrap)
 
-    # Helper functions to process reserved events through the current state
+    # Helper functions for common operations
     def trig(self, state_func, signal): return state_func(self, Event.reserved[signal])
     def enter(self, state_func): return state_func(self, Event.ENTRY)
     def exit(self, state_func): return state_func(self, Event.EXIT)
-
-    # Other helper functions
     def handled(self, event): return Hsm.RET_HANDLED
-    def tran(self, nextState): self._state = nextState; return Hsm.RET_TRAN
-    def super(self, superState): self._state = superState; return Hsm.RET_SUPER # p. 158
+    def tran(self, next_state): self._state = next_state; return Hsm.RET_TRAN
+    def super(self, super_state): self._state = super_state; return Hsm.RET_SUPER # p. 158
 
     @state
     def top(self, event):
@@ -222,8 +218,7 @@ class Hsm():
         the POSIX-like events, SIGINT/SIGTERM.
         Handling SIGINT/SIGTERM here causes the Exit path
         to be executed from the application's active state
-        to top/here.
-        The application may put something useful
+        to top/here.  The application may put something useful
         or nothing at all in the Exit path.
         """
         # Handle the Posix-like events to force the HSM
@@ -257,7 +252,7 @@ class Hsm():
             path.reverse()  # in-place
             for s in path:
                 self.enter(s)
-            # The target state has now to be checked to see if it responds to the INIT message
+            # Now the target state has to be checked to see if it responds to the INIT message
             t = path[-1]  # -1 because path was reversed
             tran_count += 1
 
@@ -266,7 +261,7 @@ class Hsm():
         return t
 
     def _perform_transition(self, source, target):
-        # Handle the state transition from source to target in the HSM.
+        """Perform the state transition from source to target in the HSM."""
         s, t = source, target
         path = [t]
         if s == t:  # Case (a), transition to self
@@ -318,7 +313,7 @@ class Hsm():
                             for st in reversed(path[:path.index(t)]):
                                 self.enter(st)
 
-    def init(self,):
+    def init(self):
         """Transitions to the initial state.  Follows any INIT transitions
         from the inital state and performs ENTRY actions as it proceeds.
         Use this to pass any parameters to initialize the state machine.
@@ -384,11 +379,9 @@ class Framework():
     # The Framework maintains a registry of Ahsms in a list.
     _ahsm_registry = []
 
-    # The Framework maintains a dict of priorities in use
-    # to prevent duplicates.
+    # The Framework maintains a dict of priorities to prevent duplicates.
     # An Ahsm's priority is checked against this dict
-    # within the Ahsm.start() method
-    # when the Ahsm is added to the Framework.
+    # within the Ahsm.start() method when the Ahsm is added to the Framework.
     # The dict's key is the priority (integer) and the value is the Ahsm.
     _priority_dict = {}
 
@@ -676,10 +669,10 @@ class Ahsm(Hsm):
         self.mq.appendleft(evt)
         Framework.run_to_completion()
 
-    def pop_msg(self,):
+    def pop_msg(self):
         return self.mq.pop()
 
-    def has_msgs(self,):
+    def has_msgs(self):
         return len(self.mq) > 0
 
 
