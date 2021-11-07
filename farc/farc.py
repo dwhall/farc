@@ -565,6 +565,14 @@ class Framework():
         Spy.on_framework_add(act)
 
     @staticmethod
+    def remove(act):
+        """Removes the Ahsm from the framework so events will no longer
+        be dispatched to the Ahsm.
+        """
+        del Framework._priority_dict[act.priority]
+        Framework._ahsm_registry.remove(act)
+
+    @staticmethod
     def run():
         """Dispatches an event to the highest priority Ahsm
         until all event queues are empty (i.e. Run To Completion).
@@ -654,6 +662,12 @@ class Ahsm(Hsm):
         self.mq = collections.deque()
         self.init()
         Framework.run_to_completion()
+
+    def end(self):
+        """Removes this Ahsm from the Framework immediately.
+        Does not process any events in its queue.
+        """
+        Framework.remove(self)
 
     def post_lifo(self, evt):
         """Adds the event in LIFO order to this Ahsm's queue.
